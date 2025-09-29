@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -42,4 +43,7 @@ public class Police {
 
     @JsonProperty("history")
     private History history;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime finishedAt;
 }
