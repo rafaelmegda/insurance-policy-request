@@ -18,8 +18,13 @@ public class CoverageJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal roubo;
+
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal perdaTotal;
+
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal colisaoComTerceiros;
 
     @ManyToOne(fetch = FetchType.LAZY)

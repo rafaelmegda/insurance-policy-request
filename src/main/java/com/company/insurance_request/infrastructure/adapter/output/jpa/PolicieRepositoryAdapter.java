@@ -1,8 +1,8 @@
 package com.company.insurance_request.infrastructure.adapter.output.jpa;
 
 import com.company.insurance_request.domain.model.Coverage;
-import com.company.insurance_request.domain.model.History;
 import com.company.insurance_request.domain.model.Police;
+import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
 import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.CoverageJpaEntity;
@@ -35,6 +35,7 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
         entity.setTotalMonthlyPremiumAmount(createPoliceRequest.totalMonthlyPremiumAmount());
         entity.setInsuredAmount(createPoliceRequest.insuredAmount());
         entity.setPaymentMethod(createPoliceRequest.paymentMethod());
+        entity.setStatus(Status.RECEBIDO);
         entity.setSalesChannel(createPoliceRequest.salesChannel());
         entity.setCreatedAt(LocalDateTime.now());
 
@@ -77,6 +78,9 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
 //                        history.getStatus(),
 //                        history.getChangedAt()
 //                )).collect(Collectors.toList())
+                .status(saved.getStatus())
+                .createdAt(saved.getCreatedAt())
+                .finishedAt(saved.getFinishedAt())
                 .build();
     }
 }

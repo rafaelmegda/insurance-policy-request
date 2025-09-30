@@ -3,6 +3,7 @@ package com.company.insurance_request.domain.model;
 import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.PaymentMethod;
 import com.company.insurance_request.domain.model.enums.SalesChannel;
+import com.company.insurance_request.domain.model.enums.Status;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -50,6 +51,9 @@ public class Police {
 
     @JsonProperty("history")
     private History history;
+
+    @JsonProperty("status")
+    private Status status;
 
     // TODO não vem no JSON inicial, avaliar se deve ficar
     @JsonProperty("created_at")

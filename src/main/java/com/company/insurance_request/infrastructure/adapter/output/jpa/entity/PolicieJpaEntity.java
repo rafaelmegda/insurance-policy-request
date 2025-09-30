@@ -70,4 +70,7 @@ public class PolicieJpaEntity {
     private LocalDateTime createdAt;
 
     private LocalDateTime finishedAt;
+
+    @OneToMany(mappedBy = "policie", cascade = CascadeType.ALL)
+    private List<HistoryEntity> history = new ArrayList<>();
 }
