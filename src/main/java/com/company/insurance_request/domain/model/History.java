@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class History {
+
+    //todo - padronizar objeto
     private Status status;
     private LocalDateTime timestamp;
 }
