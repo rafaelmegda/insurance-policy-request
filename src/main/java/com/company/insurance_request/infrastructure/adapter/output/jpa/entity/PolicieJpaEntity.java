@@ -25,7 +25,8 @@ public class PolicieJpaEntity {
     //TODO Criar tabela History e relacionar aqui
 
     @Id
-    private Long id; // vindo do request
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private UUID customerId;
@@ -43,7 +44,6 @@ public class PolicieJpaEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "policy_assistances", joinColumns = @JoinColumn(name = "policy_id"))
     @Column(name = "assistance")
-    @Enumerated(EnumType.STRING)
     private Set<String> assistances = new HashSet<>();
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -61,12 +61,10 @@ public class PolicieJpaEntity {
     private SalesChannel salesChannel;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Status status;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
     private LocalDateTime finishedAt;
 }

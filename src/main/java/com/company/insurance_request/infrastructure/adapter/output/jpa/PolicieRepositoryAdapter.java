@@ -10,6 +10,7 @@ import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.Po
 import com.company.insurance_request.infrastructure.adapter.output.jpa.repository.PolicieRepository;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
         entity.setInsuredAmount(createPoliceRequest.insuredAmount());
         entity.setPaymentMethod(createPoliceRequest.paymentMethod());
         entity.setSalesChannel(createPoliceRequest.salesChannel());
+        entity.setCreatedAt(LocalDateTime.now());
 
         if (createPoliceRequest.coverages() != null) {
             createPoliceRequest.coverages().forEach(coverage -> {
