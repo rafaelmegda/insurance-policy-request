@@ -4,11 +4,9 @@ import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.PaymentMethod;
 import com.company.insurance_request.domain.model.enums.SalesChannel;
 import com.company.insurance_request.domain.model.enums.Status;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,12 +18,15 @@ import java.util.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"coverages"})
 public class PolicieJpaEntity {
 
     //TODO Criar tabela History e relacionar aqui
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
@@ -39,10 +40,12 @@ public class PolicieJpaEntity {
     private Category category;
 
     @OneToMany(mappedBy = "policie", cascade = CascadeType.ALL)
-    private List<CoverageJpaEntity> coverages = new ArrayList<>();
+    @Builder.Default
+    @JsonManagedReference
+    private Set<CoverageJpaEntity> coverages = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "policy_assistances", joinColumns = @JoinColumn(name = "policy_id"))
+    @CollectionTable(name = "assistances", joinColumns = @JoinColumn(name = "policie_id"))
     @Column(name = "assistance")
     private Set<String> assistances = new HashSet<>();
 

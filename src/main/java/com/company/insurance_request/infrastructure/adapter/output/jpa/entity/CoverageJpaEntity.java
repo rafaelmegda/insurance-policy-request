@@ -1,10 +1,7 @@
 package com.company.insurance_request.infrastructure.adapter.output.jpa.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -14,6 +11,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CoverageJpaEntity {
 
     @Id
@@ -25,6 +23,6 @@ public class CoverageJpaEntity {
     private BigDecimal colisaoComTerceiros;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "police_id")
+    @JoinColumn(name = "police_id", nullable = false)
     private PolicieJpaEntity policie;
 }

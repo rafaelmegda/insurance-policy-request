@@ -44,6 +44,7 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
                 coverageJpaEntity.setRoubo(coverage.getRoubo());
                 coverageJpaEntity.setPerdaTotal(coverage.getPerdaTotal());
                 coverageJpaEntity.setColisaoComTerceiros(coverage.getColisaoComTerceiros());
+                coverageJpaEntity.setPolicie(entity);
                 entity.getCoverages().add(coverageJpaEntity);
             });
         }
