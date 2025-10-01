@@ -35,7 +35,7 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
         entity.setTotalMonthlyPremiumAmount(createPoliceRequest.totalMonthlyPremiumAmount());
         entity.setInsuredAmount(createPoliceRequest.insuredAmount());
         entity.setPaymentMethod(createPoliceRequest.paymentMethod());
-        entity.setStatus(Status.RECEBIDO);
+        entity.setStatus(Status.RECEIVED);
         entity.setSalesChannel(createPoliceRequest.salesChannel());
         entity.setCreatedAt(LocalDateTime.now());
 

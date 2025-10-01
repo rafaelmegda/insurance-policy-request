@@ -31,7 +31,7 @@ public class PolicieService implements CreatePoliceUseCase {
     public Police create(CreatePoliceRequest createPoliceRequest) {
         Police policeSaved = policeRepositoryPort.save(createPoliceRequest);
         historyRepositoryPort.save(policeSaved.getId(), policeSaved.getStatus());
-       PolicieStatusEvent event = eventMapper.toStatusEvent(policeSaved);
+        PolicieStatusEvent event = eventMapper.toStatusEvent(policeSaved);
         publiser.publish(event, policeSaved.getStatus().toString());
         return policeSaved;
     }

@@ -4,3 +4,4 @@ public record CreatePoliceResponse (Long id, java.time.LocalDateTime LocalDateTi
 }
 
 //todo entender o record
+//TODO implementar o response no service e no controller
