@@ -29,7 +29,6 @@ public class HistoryRepositoryAdapter implements HistoryRepositoryPort {
         entity.setStatus(status);
         entity.setId(policieId);
         entity.setTimestamp(LocalDateTime.now());
-
         PolicieJpaEntity policie = em.getReference(PolicieJpaEntity.class, policieId);
         entity.setPolicie(policie);
         historyRepository.save(entity);

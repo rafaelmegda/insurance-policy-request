@@ -1,10 +1,12 @@
 package com.company.insurance_request.application.service;
 
+import com.company.insurance_request.domain.event.PolicieStatusEvent;
 import com.company.insurance_request.domain.model.Police;
-import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
 import com.company.insurance_request.domain.port.output.HistoryRepositoryPort;
+import com.company.insurance_request.domain.port.output.MessageBrokerPort;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
+import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
 import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +16,14 @@ public class PolicieService implements CreatePoliceUseCase {
 
     private final PoliceRepositoryPort policeRepositoryPort;
     private final HistoryRepositoryPort historyRepositoryPort;
+    private final MessageBrokerPort publiser;
+    private final PoliceEventMapper eventMapper;
 
-    public PolicieService(PoliceRepositoryPort policeRepositoryPort, HistoryRepositoryPort historyRepositoryPort) {
+    public PolicieService(PoliceRepositoryPort policeRepositoryPort, HistoryRepositoryPort historyRepositoryPort, MessageBrokerPort publiser, PoliceEventMapper eventMapper) {
         this.policeRepositoryPort = policeRepositoryPort;
         this.historyRepositoryPort = historyRepositoryPort;
+        this.publiser = publiser;
+        this.eventMapper = eventMapper;
     }
 
     @Override
@@ -25,6 +31,8 @@ public class PolicieService implements CreatePoliceUseCase {
     public Police create(CreatePoliceRequest createPoliceRequest) {
         Police policeSaved = policeRepositoryPort.save(createPoliceRequest);
         historyRepositoryPort.save(policeSaved.getId(), policeSaved.getStatus());
+       PolicieStatusEvent event = eventMapper.toStatusEvent(policeSaved);
+        publiser.publish(event, policeSaved.getStatus().toString());
         return policeSaved;
     }
 
