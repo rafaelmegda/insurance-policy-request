@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class HistoryEntity {
 
     @Id
+    @GeneratedValue
     private Long id;
 
     @Enumerated(EnumType.STRING)

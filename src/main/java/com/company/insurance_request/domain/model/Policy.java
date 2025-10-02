@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class Police {
+public class Policy {
 
     // TODO não vem no JSON inicial, avaliar se deve ficar
     // TODO - AVALIAR SUBSTITUIR OS ENUMS POR OBJETOS PARA CRIAR TABELAS

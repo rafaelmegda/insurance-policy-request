@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Category {
-    VIDA,
+    LIFE,
     AUTO,
-    RESIDENCIAL,
-    VIAGEM,
-    EMPRESARIAL;
+    RESIDENTIAL,
+    TRAVEL;
 
     @JsonCreator
     public static Category fromValue(String value) {

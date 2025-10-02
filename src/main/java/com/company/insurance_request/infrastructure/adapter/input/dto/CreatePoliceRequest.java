@@ -1,8 +1,7 @@
 package com.company.insurance_request.infrastructure.adapter.input.dto;
 
 import com.company.insurance_request.domain.model.Coverage;
-import com.company.insurance_request.domain.model.History;
-import com.company.insurance_request.domain.model.Police;
+import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.PaymentMethod;
 import com.company.insurance_request.domain.model.enums.SalesChannel;
@@ -25,8 +24,8 @@ public record CreatePoliceRequest (
     @JsonProperty("sales_channel") SalesChannel salesChannel
 ){
     // TODO - AVALIAR SE NÃO DEVERIA SER UM MAPPER
-    public Police toDomain(){
-        return Police.builder()
+    public Policy toDomain(){
+        return Policy.builder()
                 .customerId(this.customerId)
                 .productId(this.productId)
                 .category(this.category)

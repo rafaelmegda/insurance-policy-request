@@ -1,7 +1,7 @@
 package com.company.insurance_request.domain.port.output.mapper;
 
 import com.company.insurance_request.domain.event.PolicieStatusEvent;
-import com.company.insurance_request.domain.model.Police;
+import com.company.insurance_request.domain.model.Policy;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class PoliceEventMapper implements PoliceEventMapperPort{
     
     @Override
-    public PolicieStatusEvent toStatusEvent(Police policie) {
+    public PolicieStatusEvent toStatusEvent(Policy policie) {
         return new PolicieStatusEvent(
                 policie.getId(),
                 policie.getCustomerId(),

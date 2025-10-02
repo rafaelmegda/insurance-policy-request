@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
     RECEIVED,
-    VALIDADO,
-    PENDENTE,
-    REJEITADO,
-    APROVADO,
-    CANCELADO;
+    VALIDATED,
+    PENDING,
+    REJECTED,
+    APPROVED,
+    CANCELED;
 
     @JsonCreator
     public static Status fromValue(String value) {

@@ -1,7 +1,16 @@
 package com.company.insurance_request.infrastructure.adapter.input.dto;
 
-public record CreatePoliceResponse (Long id, java.time.LocalDateTime LocalDateTime) {
-}
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 
-//todo entender o record
-//TODO implementar o response no service e no controller
+public record CreatePoliceResponse (
+
+        @JsonProperty("id_policy")
+        Long id,
+
+        @JsonProperty("created_at")
+        LocalDateTime createdAt
+){
+
+    }
+

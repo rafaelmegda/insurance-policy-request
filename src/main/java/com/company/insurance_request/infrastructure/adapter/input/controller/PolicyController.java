@@ -1,6 +1,6 @@
 package com.company.insurance_request.infrastructure.adapter.input.controller;
 
-import com.company.insurance_request.domain.model.Police;
+import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
 import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
 import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceResponse;
@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/policies")
-public class PoliceController {
+public class PolicyController {
 
     private final CreatePoliceUseCase createPoliceUseCase;
 
-    public PoliceController(CreatePoliceUseCase createPoliceUseCase) {
+    public PolicyController(CreatePoliceUseCase createPoliceUseCase) {
         this.createPoliceUseCase = createPoliceUseCase;
     }
 
@@ -22,23 +22,23 @@ public class PoliceController {
     public ResponseEntity<CreatePoliceResponse> createPolice(
             @RequestBody CreatePoliceRequest request
     ){
-        Police policeSaved = createPoliceUseCase.create(request);
+        Policy policySaved = createPoliceUseCase.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new CreatePoliceResponse(
-                        policeSaved.getId(),
-                        policeSaved.getCreatedAt()
+                        policySaved.getId(),
+                        policySaved.getCreatedAt()
                 ));
     }
     
     @GetMapping
-    public Police getPolice(){
-        return Police.builder().build();
+    public Policy getPolice(){
+        return Policy.builder().build();
     }
 
     @GetMapping(value = "/{policieId}")
-    public Police getPoliceById(){
-        return Police.builder().build();
+    public Policy getPoliceById(){
+        return Policy.builder().build();
     }
 
 

@@ -1,19 +1,21 @@
 package com.company.insurance_request.infrastructure.adapter.output.jpa;
 
 import com.company.insurance_request.domain.model.Coverage;
-import com.company.insurance_request.domain.model.Police;
+import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
 import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.CoverageJpaEntity;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.PolicieJpaEntity;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.repository.PolicieRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
 
@@ -24,7 +26,7 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
     }
 
     @Override
-    public Police save(CreatePoliceRequest createPoliceRequest) {
+    public Policy save(CreatePoliceRequest createPoliceRequest) {
         PolicieJpaEntity entity = new PolicieJpaEntity();
         entity.setCustomerId(createPoliceRequest.customerId());
         entity.setProductId(createPoliceRequest.productId());
@@ -54,8 +56,28 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
         return toDomain(saved);
     }
 
-    private Police toDomain(PolicieJpaEntity saved) {
-        return Police.builder()
+    @Override
+    public Policy update(Long policieId, String newStatus) {
+        PolicieJpaEntity updated = new PolicieJpaEntity();
+
+        Optional<PolicieJpaEntity> optional = policieRepository.findById(policieId);
+        if (optional.isEmpty()) {
+            throw new NoSuchElementException("Policie not found with id: " + policieId);
+        }
+        PolicieJpaEntity entity = optional.get();
+        entity.setStatus(Status.valueOf(newStatus));
+
+        if (entity.getStatus() == Status.CANCELED) {
+            entity.setFinishedAt(LocalDateTime.now());
+            log.info("Policie with id {} has been cancelled, Cannot be changed", policieId);
+            return toDomain(updated = policieRepository.save(entity));
+        }
+
+        return toDomain(updated = policieRepository.save(entity));
+    }
+
+    private Policy toDomain(PolicieJpaEntity saved) {
+        return Policy.builder()
                 .id(saved.getId())
                 .customerId(saved.getCustomerId())
                 .productId(saved.getProductId())
