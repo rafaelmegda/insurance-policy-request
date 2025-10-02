@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/fraud-api/v1/fraud-validate/8e1c0c77-b7c4-4c4a-8c2d-d1b3c0c9f222"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "fraud-check-high-risk.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

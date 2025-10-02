@@ -25,10 +25,12 @@ public class ValidateFraudClient implements ValidateFraudPort {
     @Override
     public ValidateFraud validate(PolicieStatusEvent event) {
         try{
-            return restTemplate.getForObject(
+            ValidateFraud response = null;
+             response = restTemplate.getForObject(
                     baseUrl + path + event.customerId(),
                     ValidateFraud.class
             );
+            return response;
         }catch (Exception ex){
             log.error("Erro ao chamar API de fraude", ex);
             return null;

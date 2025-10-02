@@ -19,7 +19,7 @@ public class ProcessPolicieStatusEventService implements ProcessPolicieStatusEve
 
     @Override
     public void process(PolicieStatusEvent event) {
-        log.info("Iniciando validação de fraude para a apólice: {}", event.policieId());
+        log.info("Iniciando validacaoo de fraude para a apolice: {}", event.policieId());
 
         ValidateFraud response = validateFraudPort.validate(event);
         log.info("response: {}", response);

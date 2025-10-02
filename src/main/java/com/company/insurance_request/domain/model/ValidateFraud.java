@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Data
 @Builder
@@ -25,5 +26,5 @@ public class ValidateFraud {
     private Classification classification;
 
     @JsonProperty("occurrences")
-    private Occurrence occurrences;
+    private List<Occurrence> occurrences;
 }
