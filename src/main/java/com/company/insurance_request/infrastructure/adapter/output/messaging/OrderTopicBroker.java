@@ -1,4 +1,4 @@
-package com.company.insurance_request.infrastructure.adapter.output.messaging.event;
+package com.company.insurance_request.infrastructure.adapter.output.messaging;
 
 import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.port.output.OrderTopicBrokerPort;

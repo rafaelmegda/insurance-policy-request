@@ -9,23 +9,18 @@ import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
 import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class PolicyService implements CreatePoliceUseCase {
 
     private final PoliceRepositoryPort policeRepositoryPort;
     private final HistoryRepositoryPort historyRepositoryPort;
     private final OrderTopicBrokerPort publiser;
     private final PoliceEventMapper eventMapper;
-
-    public PolicyService(PoliceRepositoryPort policeRepositoryPort, HistoryRepositoryPort historyRepositoryPort, OrderTopicBrokerPort publiser, PoliceEventMapper eventMapper) {
-        this.policeRepositoryPort = policeRepositoryPort;
-        this.historyRepositoryPort = historyRepositoryPort;
-        this.publiser = publiser;
-        this.eventMapper = eventMapper;
-    }
 
     @Override
     @Transactional

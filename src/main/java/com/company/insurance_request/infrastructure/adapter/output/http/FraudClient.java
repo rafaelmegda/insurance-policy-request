@@ -2,7 +2,7 @@ package com.company.insurance_request.infrastructure.adapter.output.http;
 
 import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.model.ValidateFraud;
-import com.company.insurance_request.domain.port.output.ValidateFraudPort;
+import com.company.insurance_request.domain.port.output.FraudPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @Slf4j
-public class ValidateFraudClient implements ValidateFraudPort {
+public class FraudClient implements FraudPort {
 
     @Value("${fraud.api.base-url}")
     private String baseUrl;

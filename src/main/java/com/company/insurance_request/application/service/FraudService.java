@@ -6,7 +6,7 @@ import com.company.insurance_request.domain.model.ValidateFraud;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.input.FraudUseCase;
 import com.company.insurance_request.domain.port.output.OrderTopicBrokerPort;
-import com.company.insurance_request.domain.port.output.ValidateFraudPort;
+import com.company.insurance_request.domain.port.output.FraudPort;
 import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
 import com.company.insurance_request.domain.service.FraudDomainService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FraudService implements FraudUseCase {
 
-    private final ValidateFraudPort validateFraudPort;
+    private final FraudPort fraudPort;
     private final PolicyService policyService;
     private final OrderTopicBrokerPort publiser;
     private final PoliceEventMapper policeEventMapper;
@@ -30,7 +30,7 @@ public class FraudService implements FraudUseCase {
         log.info("Iniciando validacaoo de fraude para a apolice: {}", event.policieId());
 
         if(event.status() == Status.RECEIVED){
-            ValidateFraud validateFraud = validateFraudPort.validate(event);
+            ValidateFraud validateFraud = fraudPort.validate(event);
             log.info("Response Validated fraud: {}", validateFraud);
 
             if (validateFraud == null || validateFraud.getClassification() == null) {
