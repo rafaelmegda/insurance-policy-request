@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/fraud-api/v1/fraud-validate/7b2f3f44-667a-4a6e-aefb-978704560e51"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "fraud-check-regular.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
