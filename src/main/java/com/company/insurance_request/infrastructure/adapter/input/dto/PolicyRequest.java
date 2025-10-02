@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-public record CreatePoliceRequest (
+public record PolicyRequest(
         
     @JsonProperty("customer_id") UUID customerId,
     @JsonProperty("product_id") Long productId,

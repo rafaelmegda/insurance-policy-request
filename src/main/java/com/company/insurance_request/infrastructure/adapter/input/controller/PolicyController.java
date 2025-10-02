@@ -2,8 +2,9 @@ package com.company.insurance_request.infrastructure.adapter.input.controller;
 
 import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
-import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
-import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceResponse;
+import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
+import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,13 @@ public class PolicyController {
     }
 
     @PostMapping
-    public ResponseEntity<CreatePoliceResponse> createPolice(
-            @RequestBody CreatePoliceRequest request
-    ){
+    public ResponseEntity<PolicyResponse> createPolice(
+            @RequestBody PolicyRequest request
+    ) throws JsonProcessingException {
         Policy policySaved = createPoliceUseCase.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(new CreatePoliceResponse(
+                .body(new PolicyResponse(
                         policySaved.getId(),
                         policySaved.getCreatedAt()
                 ));

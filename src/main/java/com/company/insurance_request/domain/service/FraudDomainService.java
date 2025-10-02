@@ -1,29 +1,15 @@
-package com.company.insurance_request.application.service;
+package com.company.insurance_request.domain.service;
 
-import com.company.insurance_request.domain.event.PolicieStatusEvent;
-import com.company.insurance_request.domain.model.Policy;
-import com.company.insurance_request.domain.model.ValidateFraud;
 import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.Classification;
-import com.company.insurance_request.domain.model.enums.Status;
-import com.company.insurance_request.domain.port.input.ProcessPolicieStatusEventUseCase;
-import com.company.insurance_request.domain.port.output.MessageBrokerPort;
-import com.company.insurance_request.domain.port.output.ValidateFraudPort;
-import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Slf4j
 @Service
-public class ValidateFraudService implements ProcessPolicieStatusEventUseCase {
-
-    private final ValidateFraudPort validateFraudPort;
-    private final PolicyService policyService;
-    private final MessageBrokerPort publiser;
-    private final PoliceEventMapper eventMapper;
+public class FraudDomainService {
 
     private static final BigDecimal REGULAR_VIDA_RESIDENCIAL = new BigDecimal("500000");
     private static final BigDecimal REGULAR_AUTO = new BigDecimal("350000");
@@ -41,56 +27,7 @@ public class ValidateFraudService implements ProcessPolicieStatusEventUseCase {
     private static final BigDecimal NOINFO_AUTO = new BigDecimal("75000");
     private static final BigDecimal NOINFO_OTHER = new BigDecimal("55000");
 
-    public ValidateFraudService(
-            ValidateFraudPort validateFraudPort,
-            PolicyService policyService,
-            MessageBrokerPort publiser,
-            PoliceEventMapper eventMapper
-    ) {
-        this.validateFraudPort = validateFraudPort;
-        this.policyService = policyService;
-        this.publiser = publiser;
-        this.eventMapper = eventMapper;
-    }
-
-    @Override
-    public void process(PolicieStatusEvent event) {
-        log.info("Iniciando validacaoo de fraude para a apolice: {}", event.policieId());
-
-        if(event.status() == Status.RECEIVED){
-            ValidateFraud validateFraud = validateFraudPort.validate(event);
-            log.info("response fraud: {}", validateFraud);
-
-            if (validateFraud == null || validateFraud.getClassification() == null) {
-                log.warn("Fraud response inválida para apólice {}, marcando para reprocessamento (RECEIVED).", event.policieId());
-                // TODO AVALIAR RESILIENCIA CASO FALHE A CHAMADA DA API DE FRAUD
-                return;
-            }
-
-            Classification classification = validateFraud.getClassification();
-            Category category = event.category();
-            BigDecimal insuredAmount = event.insuredAmount();
-
-            boolean allowed = evaluate(classification, category, insuredAmount);
-
-            if (allowed) {
-                log.info("Policy {} approved by rule (classification={}, category={}, insuredAmount={}).",
-                        event.policieId(), classification, category, insuredAmount);
-
-                Policy policy = policyService.updateStatus(event.policieId(), Status.VALIDATED.toValue());
-
-                PolicieStatusEvent eventApproved = eventMapper.toStatusEvent(policy);
-                publiser.publish(eventApproved, Status.PENDING.toValue());
-
-            } else {
-                log.info("Policy {} rejected by rule (classification={}, category={}, insuredAmount={}).",
-                        event.policieId(), classification, category, insuredAmount);
-                Policy policy = policyService.updateStatus(event.policieId(), Status.REJECTED.toValue());
-            }
-        }
-    }
-
-    private boolean evaluate(Classification classification, Category category, BigDecimal insuredAmount) {
+    public boolean isValidated(Classification classification, Category category, BigDecimal insuredAmount) {
         switch (classification) {
             case REGULAR:
                 return checkRegular(category, insuredAmount);
@@ -144,9 +81,5 @@ public class ValidateFraudService implements ProcessPolicieStatusEventUseCase {
         } else {
             return insuredAmount.compareTo(NOINFO_OTHER) <= 0;
         }
-    }
-
-    private BigDecimal safe(BigDecimal value) {
-        return Objects.requireNonNullElse(value, BigDecimal.ZERO);
     }
 }

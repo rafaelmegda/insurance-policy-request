@@ -7,10 +7,12 @@ import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.Po
 import com.company.insurance_request.infrastructure.adapter.output.jpa.repository.HistoryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
 public class HistoryRepositoryAdapter implements HistoryRepositoryPort {
 
@@ -25,11 +27,16 @@ public class HistoryRepositoryAdapter implements HistoryRepositoryPort {
 
     @Override
     public void save(Long policieId, Status status) {
-        HistoryEntity entity = new HistoryEntity();
-        entity.setStatus(status);
-        entity.setTimestamp(LocalDateTime.now());
-        PolicieJpaEntity policie = em.getReference(PolicieJpaEntity.class, policieId);
-        entity.setPolicie(policie);
-        historyRepository.save(entity);
+        try {
+            HistoryEntity entity = new HistoryEntity();
+            entity.setStatus(status);
+            entity.setTimestamp(LocalDateTime.now());
+            PolicieJpaEntity policie = em.getReference(PolicieJpaEntity.class, policieId);
+            entity.setPolicie(policie);
+            historyRepository.save(entity);
+        }catch (Exception e){
+            log.error("Error creating history policy_id: {} - {}", policieId, e.getMessage());
+            throw e;
+        }
     }
 }

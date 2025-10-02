@@ -4,7 +4,7 @@ import com.company.insurance_request.domain.model.Coverage;
 import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
-import com.company.insurance_request.infrastructure.adapter.input.dto.CreatePoliceRequest;
+import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.CoverageJpaEntity;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.PolicieJpaEntity;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.repository.PolicieRepository;
@@ -26,34 +26,39 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
     }
 
     @Override
-    public Policy save(CreatePoliceRequest createPoliceRequest) {
-        PolicieJpaEntity entity = new PolicieJpaEntity();
-        entity.setCustomerId(createPoliceRequest.customerId());
-        entity.setProductId(createPoliceRequest.productId());
-        entity.setCategory(createPoliceRequest.category());
-        entity.setAssistances(createPoliceRequest.assistances() == null
-                ? Collections.emptySet()
-                : new HashSet<>(createPoliceRequest.assistances()));
-        entity.setTotalMonthlyPremiumAmount(createPoliceRequest.totalMonthlyPremiumAmount());
-        entity.setInsuredAmount(createPoliceRequest.insuredAmount());
-        entity.setPaymentMethod(createPoliceRequest.paymentMethod());
-        entity.setStatus(Status.RECEIVED);
-        entity.setSalesChannel(createPoliceRequest.salesChannel());
-        entity.setCreatedAt(LocalDateTime.now());
+    public Policy save(PolicyRequest policyRequest) {
+        try{
+            PolicieJpaEntity entity = new PolicieJpaEntity();
+            entity.setCustomerId(policyRequest.customerId());
+            entity.setProductId(policyRequest.productId());
+            entity.setCategory(policyRequest.category());
+            entity.setAssistances(policyRequest.assistances() == null
+                    ? Collections.emptySet()
+                    : new HashSet<>(policyRequest.assistances()));
+            entity.setTotalMonthlyPremiumAmount(policyRequest.totalMonthlyPremiumAmount());
+            entity.setInsuredAmount(policyRequest.insuredAmount());
+            entity.setPaymentMethod(policyRequest.paymentMethod());
+            entity.setStatus(Status.RECEIVED);
+            entity.setSalesChannel(policyRequest.salesChannel());
+            entity.setCreatedAt(LocalDateTime.now());
 
-        if (createPoliceRequest.coverages() != null) {
-            createPoliceRequest.coverages().forEach(coverage -> {
-                CoverageJpaEntity coverageJpaEntity = new CoverageJpaEntity();
-                coverageJpaEntity.setRoubo(coverage.getRoubo());
-                coverageJpaEntity.setPerdaTotal(coverage.getPerdaTotal());
-                coverageJpaEntity.setColisaoComTerceiros(coverage.getColisaoComTerceiros());
-                coverageJpaEntity.setPolicie(entity);
-                entity.getCoverages().add(coverageJpaEntity);
-            });
+            if (policyRequest.coverages() != null) {
+                policyRequest.coverages().forEach(coverage -> {
+                    CoverageJpaEntity coverageJpaEntity = new CoverageJpaEntity();
+                    coverageJpaEntity.setRoubo(coverage.getRoubo());
+                    coverageJpaEntity.setPerdaTotal(coverage.getPerdaTotal());
+                    coverageJpaEntity.setColisaoComTerceiros(coverage.getColisaoComTerceiros());
+                    coverageJpaEntity.setPolicie(entity);
+                    entity.getCoverages().add(coverageJpaEntity);
+                });
+            }
+
+            PolicieJpaEntity saved = policieRepository.save(entity);
+            return toDomain(saved);
+        }catch (Exception e){
+            log.error("Error creating Policy for client: {} - {}", policyRequest.customerId(), e.getMessage());
+            throw e;
         }
-
-        PolicieJpaEntity saved = policieRepository.save(entity);
-        return toDomain(saved);
     }
 
     @Override

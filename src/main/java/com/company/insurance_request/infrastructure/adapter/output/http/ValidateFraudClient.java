@@ -1,6 +1,6 @@
 package com.company.insurance_request.infrastructure.adapter.output.http;
 
-import com.company.insurance_request.domain.event.PolicieStatusEvent;
+import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.model.ValidateFraud;
 import com.company.insurance_request.domain.port.output.ValidateFraudPort;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class ValidateFraudClient implements ValidateFraudPort {
     private RestTemplate restTemplate;
 
     @Override
-    public ValidateFraud validate(PolicieStatusEvent event) {
+    public ValidateFraud validate(OrderTopicEvent event) {
         try{
             ValidateFraud response = null;
              response = restTemplate.getForObject(

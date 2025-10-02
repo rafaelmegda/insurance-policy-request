@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record PolicieStatusEvent (
+public record OrderTopicEvent(
 
         // TODO - padronizar payload sanck_case @JsonProperty
 
@@ -29,4 +29,6 @@ public record PolicieStatusEvent (
         LocalDateTime createdAt,
         LocalDateTime finishedAt,
         LocalDateTime timestamp
-){}
+){
+
+}
