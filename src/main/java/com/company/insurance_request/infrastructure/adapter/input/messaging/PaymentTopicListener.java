@@ -24,10 +24,10 @@ public class PaymentTopicListener {
     public void onMessage(PaymentTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("PaymentTopic received policieId: {} - routing : {} - event: {}", event.policieId(), routingKey, event);
+            log.info("Message received status: {} queue.payment to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
             paymentTopicUseCase.processMessagePayment(event);
         }catch (Exception e){
-            log.error("Error listener message queue payment to policy_id: {} - status: {} - error: {}", event.policieId(), event.status(), e.getMessage());
+            log.error("Error listener message queue.payment to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
             throw e;
         }
     }

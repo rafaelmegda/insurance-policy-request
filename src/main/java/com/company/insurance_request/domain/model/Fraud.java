@@ -13,8 +13,8 @@ import java.util.List;
 @Builder
 public class Fraud {
 
-    @JsonProperty("order_id")
-    private UUID orderId;
+    @JsonProperty("policy_id")
+    private UUID policyId;
 
     @JsonProperty("customer_id")
     private UUID customerId;

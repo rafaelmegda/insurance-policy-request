@@ -44,6 +44,7 @@ public class FraudDomainService {
     }
 
     private boolean checkRegular(Category category, BigDecimal insuredAmount) {
+        log.info("Checking REGULAR classification for category: {}", category);
         if (category == Category.LIFE || category == Category.RESIDENTIAL) {
             return insuredAmount.compareTo(REGULAR_LIFE_RESIDENTIAL) <= 0;
         } else if (category == Category.AUTO) {
@@ -54,6 +55,7 @@ public class FraudDomainService {
     }
 
     private boolean checkHighRisk(Category category, BigDecimal insuredAmount) {
+        log.info("Checking HIGH_RISK classification for category: {}", category);
         if (category == Category.AUTO) {
             return insuredAmount.compareTo(HIGH_RISK_AUTO) <= 0;
         } else if (category == Category.RESIDENTIAL) {
@@ -64,6 +66,7 @@ public class FraudDomainService {
     }
 
     private boolean checkPreferential(Category category, BigDecimal insuredAmount) {
+        log.info("Checking PREFERENTIAL classification for category: {}", category);
         if (category == Category.LIFE) {
             return insuredAmount.compareTo(PREFERENTIAL_LIFE) < 0;
         } else if (category == Category.AUTO || category == Category.RESIDENTIAL) {
@@ -74,6 +77,7 @@ public class FraudDomainService {
     }
 
     private boolean checkNoInfo(Category category, BigDecimal insuredAmount) {
+        log.info("Checking NO_INFORMATION classification for category: {}", category);
         if (category == Category.LIFE || category == Category.RESIDENTIAL) {
             return insuredAmount.compareTo(NOINFO_LIFE_RESIDENTIAL) <= 0;
         } else if (category == Category.AUTO) {

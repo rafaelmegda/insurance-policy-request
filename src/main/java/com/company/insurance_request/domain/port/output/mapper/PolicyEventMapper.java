@@ -3,28 +3,20 @@ package com.company.insurance_request.domain.port.output.mapper;
 import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.model.Policy;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
 @Component
 public class PolicyEventMapper implements PolicyEventMapperPort {
     
     @Override
-    public OrderTopicEvent toStatusEvent(Policy policie) {
+    public OrderTopicEvent toStatusEvent(Policy policy) {
         return new OrderTopicEvent(
-                policie.getId(),
-                policie.getCustomerId(),
-                policie.getProductId(),
-                policie.getCategory(),
-                policie.getCoverages(),
-                policie.getAssistances(),
-                policie.getTotalMonthlyPremiumAmount(),
-                policie.getInsuredAmount(),
-                policie.getPaymentMethod(),
-                policie.getSalesChannel(),
-                policie.getStatus(),
-                policie.getCreatedAt(),
-                policie.getFinishedAt(),
+                policy.getPolicyId(),
+                policy.getCustomerId(),
+                policy.getProductId(),
+                policy.getCategory(),
+                policy.getInsuredAmount(),
+                policy.getStatus(),
                 LocalDateTime.now()
         );
     }

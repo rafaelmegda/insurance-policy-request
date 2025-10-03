@@ -17,11 +17,10 @@ public class OrderTopicService implements OrderTopicUseCase {
 
     @Override
     public void processMessageOrder(OrderTopicEvent event) throws JsonProcessingException {
-        log.info("Iniciando validacaoo de fraude para a apolice: {}", event.policieId());
 
         if (event.status() == Status.RECEIVED) {
+            log.info("Initiating Fraud Approval Request to policy: {}", event.policyId());
             fraudService.processFraud(event);
-            //log.info("response fraud: {}", validateFraud);
         }
     }
 }

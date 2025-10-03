@@ -25,6 +25,7 @@ public class FraudClient implements FraudPort {
     @Override
     public Fraud validate(OrderTopicEvent event) {
         try{
+            log.info("Calling Fraud API for customerId: {}", event.customerId());
             Fraud response = null;
              response = restTemplate.getForObject(
                     baseUrl + path + event.customerId(),
@@ -32,7 +33,7 @@ public class FraudClient implements FraudPort {
             );
             return response;
         }catch (Exception ex){
-            log.error("Erro ao chamar API de fraude", ex);
+            log.error("Error calling Fraud API for customerId: {} - {}", event.customerId(), ex.getMessage());
             return null;
         }
     }

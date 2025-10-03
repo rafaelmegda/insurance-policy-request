@@ -24,10 +24,10 @@ public class SubscriptionTopicListener {
     public void onMessage(SubscriptionTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("Subscription received policieId: {} - routing : {} - event: {}", event.policieId(), routingKey, event);
+            log.info("Subscription received policyId: {} - routing : {} - event: {}", event.policyId(), routingKey, event);
             subscriptionTopicUseCase.processMessageSubscription(event);
         }catch (Exception e){
-            log.error("Error listener message of queue subscription to policy_id: {} - status: {} - error: {}", event.policieId(), event.status(), e.getMessage());
+            log.error("Error listener message of queue subscription to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
             throw e;
         }
     }

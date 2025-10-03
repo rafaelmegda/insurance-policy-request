@@ -87,8 +87,6 @@ Vantagens:
 - Controller: Exposição de APIs REST
 - Messaging: Comunicação assíncrona via RabbitMQ
 
------------------------
-
 ## Fluxo de Eventos Mensageria RabbitMQ
 
 Acessar o RabbitMQ Management UI
@@ -110,36 +108,7 @@ Acessar o RabbitMQ Management UI
       - Exchange: insurance.policy.exchange
       - Routing keys: insurance.policy.requested, insurance.policy.approved, etc.
 
-Postando Menssagem no Broker RabbitMQ
 
-Exemplo de Payload para Subscription e payment
-
- ```json
-{
-   "policie_id": 1,
-   "customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
-   "product_id": 789,
-   "category": "LIFE",
-   "coverages": [
-      {
-         "roubo": 10000,
-         "perda_total": 10000,
-         "colisao_com_terceiros": 500
-      }
-   ],
-   "assistances": [
-      "24H_TOWING",
-      "ROADSIDE_ASSISTANCE"
-   ],
-   "total_monthly_premium_amount": 250.75,
-   "insured_amount": 150000,
-   "payment_method": "DEBIT_CARD",
-   "sales_channel": "TELEFONE",
-   "statis": "APPROVED",
-   "created_at": "2025-09-01T09:00:00",
-   "finished_at": "2026-09-01T09:00:00"
-}
-```
 -----------------------
 
 ## Banco de Dados
@@ -173,8 +142,9 @@ Pasta do Wiremock contém:
 - mappings: Contém os arquivos de mapeamento que definem como o Wiremock deve responder a diferentes solicitações.
 
 -----------------------
+# Executando a aplicação
 
-## Execução com Docker Compose
+## Ambiente Docker
 
 **Arquivo:** docker-compose.yml
 
@@ -208,6 +178,60 @@ Listar Containers
  ```bash
  docker ps
  ```
+
+## Mensageria RabbitMQ para Subscrição e Pagamento
+Para simular o fluxo completo, é necessário postar mensagens no RabbitMQ para os tópicos de Subscription e Payment.
+
+Como fazer isso:
+1. Acesse o RabbitMQ Management UI em http://localhost:15672 (usuário: guest, senha: guest).
+2. Vá para a aba "Exchanges" e confirme se existe a exchange `insurance.policy.exchange`.
+3. Na seção "Queues", verifique se as filas `insurance.subscription.q` e `insurance.payment.q` estão criadas
+4. Selecione a "Queues" que deseja enviar a mensagem (insurance.subscription.q ou insurance.payment.q).
+5. Na seção "Publish message", pegue os exemplos abaixo de APPROVED ou REJECTED.
+4. No campo "Payload", insira o JSON da apólice que você deseja processar.
+5. Clique em "Publish message" para enviar a mensagem.
+
+Para visualizar as mensagens na fila:
+1. Vá para a aba "Queues".
+2. Clique na fila desejada (`insurance.subscription.q ou insurance.payment.q`).
+3. Na seção "Get messages", defina o número de mensagens que deseja visualizar e clique em "Get Message(s)".
+
+Para apagar as mensagens na fila:
+1. Vá para a aba "Queues".
+2. Clique na fila desejada (`insurance.subscription.q ou insurance.payment.q`).
+3. Na seção "Purge", clique em "Purge" para remover todas as mensagens da fila.
+
+Para visualizar as mensagens do tópico order (postado para os consumidores externos Payment e Subscription):
+1. Vá para a aba "Queues".
+2. Clique na fila `insurance.policy.status.q`.
+3. Na seção "Get messages", defina o número de mensagens que deseja visualizar e clique em "Get Message(s)".
+
+**Exemplo de Payload para Subscrição ou Pagamento como APPROVED:**
+
+ ```json
+{
+   "policy_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "product_id": 789,
+   "category": "LIFE",
+   "insured_amount": 150000.00,
+   "status": "APPROVED",
+   "timestamp": "2025-10-03T09:00:00"
+}
+```
+
+**Exemplo de Payload para Subscrição ou Pagamento como REJECTED:**
+ ```json
+{
+   "policy_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "product_id": 789,
+   "category": "LIFE",
+   "insured_amount": 150000.00,
+   "status": "REJECTED",
+   "timestamp": "2025-10-03T09:00:00"
+}
+```
 
 --------------------------------------
 # Testes

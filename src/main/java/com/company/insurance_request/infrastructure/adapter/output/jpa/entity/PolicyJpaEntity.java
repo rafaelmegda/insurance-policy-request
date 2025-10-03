@@ -20,14 +20,12 @@ import java.util.*;
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"coverages"})
-public class PolicieJpaEntity {
+public class PolicyJpaEntity {
 
     //TODO Criar tabela History e relacionar aqui
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
-    private Long id;
+    private UUID policyId;
 
     @Column(nullable = false)
     private UUID customerId;
@@ -39,13 +37,13 @@ public class PolicieJpaEntity {
     @Column(nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "policie", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     @Builder.Default
     @JsonManagedReference
     private Set<CoverageJpaEntity> coverages = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "assistances", joinColumns = @JoinColumn(name = "policie_id"))
+    @CollectionTable(name = "assistances", joinColumns = @JoinColumn(name = "policy_id"))
     @Column(name = "assistance")
     private Set<String> assistances = new HashSet<>();
 
@@ -71,6 +69,6 @@ public class PolicieJpaEntity {
 
     private LocalDateTime finishedAt;
 
-    @OneToMany(mappedBy = "policie", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<HistoryEntity> history = new ArrayList<>();
 }

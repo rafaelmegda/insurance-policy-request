@@ -1,10 +1,13 @@
 package com.company.insurance_request.domain.port.output;
 
 import com.company.insurance_request.domain.model.Policy;
+import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
+
+import java.util.UUID;
 
 public interface PoliceRepositoryPort {
     Policy save(PolicyRequest policyRequest);
 
-    Policy update(Long policieId, String newStatus);
+    Policy update(UUID policyId, Status status);
 }

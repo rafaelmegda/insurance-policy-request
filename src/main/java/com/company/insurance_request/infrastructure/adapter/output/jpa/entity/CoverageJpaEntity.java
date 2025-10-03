@@ -1,5 +1,6 @@
 package com.company.insurance_request.infrastructure.adapter.output.jpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,20 +15,23 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CoverageJpaEntity {
 
+    // TODO - IMAGINAR COBERTURAS E INCLUIR COMO NULLABLE NA TABELA
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(precision = 15, scale = 2)
     private BigDecimal roubo;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(precision = 15, scale = 2)
     private BigDecimal perdaTotal;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(precision = 15, scale = 2)
     private BigDecimal colisaoComTerceiros;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "police_id", nullable = false)
-    private PolicieJpaEntity policie;
+    @JoinColumn(name = "policy_id", nullable = false)
+    @JsonBackReference
+    private PolicyJpaEntity policy;
 }

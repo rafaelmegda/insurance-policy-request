@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class HistoryEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -24,6 +24,6 @@ public class HistoryEntity {
     private LocalDateTime timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "police_id", nullable = false)
-    private PolicieJpaEntity policie;
+    @JoinColumn(name = "policy_id", nullable = false)
+    private PolicyJpaEntity policy;
 }

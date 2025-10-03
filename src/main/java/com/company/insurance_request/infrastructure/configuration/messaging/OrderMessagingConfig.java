@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class OrderMessageConfig {
+public class OrderMessagingConfig {
 
     @Bean(name = "orderExchange")
     public TopicExchange requestExchange(

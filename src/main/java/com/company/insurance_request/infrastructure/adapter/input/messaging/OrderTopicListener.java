@@ -24,10 +24,10 @@ public class OrderTopicListener {
     public void onMessage(OrderTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("OrderTopic received policieId: {} - routing : {} - event: {}", event.policieId(), routingKey, event);
+            log.info("Message received status: {} queue.order.status to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
             orderTopicUseCase.processMessageOrder(event);
         }catch (Exception e){
-            log.error("Error listener message to policy_id: {} - status: {} - error: {}", event.policieId(), event.status(), e.getMessage());
+            log.error("Error listener queue.order.status message to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
             throw e;
         }
     }
