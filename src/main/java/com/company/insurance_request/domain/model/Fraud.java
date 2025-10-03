@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ValidateFraud {
+public class Fraud {
 
     @JsonProperty("order_id")
     private UUID orderId;

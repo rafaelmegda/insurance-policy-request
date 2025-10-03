@@ -23,7 +23,6 @@ public record PolicyRequest(
     @JsonProperty("payment_method") PaymentMethod paymentMethod,
     @JsonProperty("sales_channel") SalesChannel salesChannel
 ){
-    // TODO - AVALIAR SE NÃO DEVERIA SER UM MAPPER
     public Policy toDomain(){
         return Policy.builder()
                 .customerId(this.customerId)

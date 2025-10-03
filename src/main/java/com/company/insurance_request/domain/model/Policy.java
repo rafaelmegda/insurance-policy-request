@@ -17,8 +17,9 @@ import java.util.UUID;
 @Builder
 public class Policy {
 
-    // TODO não vem no JSON inicial, avaliar se deve ficar
     // TODO - AVALIAR SUBSTITUIR OS ENUMS POR OBJETOS PARA CRIAR TABELAS
+    // TODO - REVER MODELAGEM DE COBERTURA (Estão especificas para um tipo)
+
     @JsonProperty("id")
     private Long id;
 
@@ -55,11 +56,9 @@ public class Policy {
     @JsonProperty("status")
     private Status status;
 
-    // TODO não vem no JSON inicial, avaliar se deve ficar
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
-    // TODO não vem no JSON inicial, avaliar se deve ficar
     @JsonProperty("finished_at")
     private LocalDateTime finishedAt;
 }

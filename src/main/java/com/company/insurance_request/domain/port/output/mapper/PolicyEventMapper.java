@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class PoliceEventMapper implements PoliceEventMapperPort{
+public class PolicyEventMapper implements PolicyEventMapperPort {
     
     @Override
     public OrderTopicEvent toStatusEvent(Policy policie) {

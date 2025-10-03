@@ -9,29 +9,27 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class OrderTopicBroker implements OrderTopicBrokerPort {
+public class OrderTopicPublisher implements OrderTopicBrokerPort {
 
     private final RabbitTemplate rabbitTemplate;
-    private final TopicExchange topicExchange;
-    private final ObjectMapper objectMapper;
+    private final TopicExchange orderExchange;
 
-    public OrderTopicBroker(RabbitTemplate rabbitTemplate, TopicExchange topicExchange, ObjectMapper objectMapper) {
+    public OrderTopicPublisher(RabbitTemplate rabbitTemplate,
+                               @Qualifier("orderExchange") TopicExchange orderExchange) {
         this.rabbitTemplate = rabbitTemplate;
-        this.topicExchange = topicExchange;
-        this.objectMapper = objectMapper;
+        this.orderExchange = orderExchange;
     }
 
     @Override
     public void publish(OrderTopicEvent event, String routingKey) throws JsonProcessingException {
         try{
-            byte[] body = objectMapper.writeValueAsBytes(event);
-            MessageProperties props = new MessageProperties();
-            props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-            rabbitTemplate.send(topicExchange.getName(), routingKey, new Message(body, props));
+            rabbitTemplate.convertAndSend(orderExchange.getName(), routingKey, event);
+            log.info("Published event: {} order event policieId={} routingKey={}", event, event.policieId(), routingKey);
         }catch (Exception e){
             log.error("Error publish message to policy_id : {} - {}", event.policieId(), e.getMessage());
             throw e;

@@ -5,7 +5,7 @@ import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.input.PaymentTopicUseCase;
 import com.company.insurance_request.domain.port.output.OrderTopicBrokerPort;
-import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
+import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +18,14 @@ public class PaymentTopicService implements PaymentTopicUseCase {
 
     private final PolicyService policyService;
     private final OrderTopicBrokerPort publiser;
-    private final PoliceEventMapper policeEventMapper;
+    private final PolicyEventMapper policyEventMapper;
 
     @Override
     public void processMessagePayment(PaymentTopicEvent paymentTopicEvent) throws JsonProcessingException {
 
         if (paymentTopicEvent.status() == Status.REJECTED || paymentTopicEvent.status() == Status.APPROVED){
             Policy policy = policyService.updateStatus(paymentTopicEvent.policieId(), paymentTopicEvent.status().toValue());
-            publiser.publish(policeEventMapper.toStatusEvent(policy), paymentTopicEvent.status().toValue());
+            publiser.publish(policyEventMapper.toStatusEvent(policy), paymentTopicEvent.status().toValue());
             log.info("policy: {} payment was: {}", paymentTopicEvent.policieId(), paymentTopicEvent.status());
         }
     }

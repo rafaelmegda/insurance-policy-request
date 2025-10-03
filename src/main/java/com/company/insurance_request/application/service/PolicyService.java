@@ -6,7 +6,7 @@ import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
 import com.company.insurance_request.domain.port.output.HistoryRepositoryPort;
 import com.company.insurance_request.domain.port.output.OrderTopicBrokerPort;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
-import com.company.insurance_request.domain.port.output.mapper.PoliceEventMapper;
+import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class PolicyService implements CreatePoliceUseCase {
     private final PoliceRepositoryPort policeRepositoryPort;
     private final HistoryRepositoryPort historyRepositoryPort;
     private final OrderTopicBrokerPort publiser;
-    private final PoliceEventMapper eventMapper;
+    private final PolicyEventMapper eventMapper;
 
     @Override
     @Transactional

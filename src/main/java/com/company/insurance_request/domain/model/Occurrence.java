@@ -18,8 +18,6 @@ public class Occurrence {
     @JsonProperty("product_id")
     private Long productId;
 
-    //TODO talvez não precise tipar, senão se inserirem novas ocorrencias, teria que validar sempre aqui
-    // Pensar que o sistema é para multiplas corretoras e cada uma pode ter suas proprias ocorrencias
     @JsonProperty("type")
     private OccurrencesType type;
 
