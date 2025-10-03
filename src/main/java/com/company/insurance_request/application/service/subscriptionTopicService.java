@@ -27,7 +27,7 @@ public class subscriptionTopicService implements SubscriptionTopicUseCase {
 
         if (subscriptionTopicEvent.status() == Status.REJECTED || subscriptionTopicEvent.status() == Status.APPROVED){
 
-            log.info("Payment status {} for policy: {}", subscriptionTopicEvent.status(), subscriptionTopicEvent.policyId());
+            log.info("Subscription status {} for policy: {}", subscriptionTopicEvent.status(), subscriptionTopicEvent.policyId());
 
 //            Policy policy = policyService.updateStatus(subscriptionTopicEvent.policyId(), subscriptionTopicEvent.status());
 //            publiser.publish(policyEventMapper.toStatusEvent(policy), subscriptionTopicEvent.status().toValue());

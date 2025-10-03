@@ -24,8 +24,9 @@ public class OrderTopicPublisher implements OrderTopicPublisherPort {
 
     @Override
     public void publish(OrderTopicEvent event, String routingKey) throws JsonProcessingException {
+        String resolvedRoutingKey = "insurance.order.status." + routingKey;
         try{
-            rabbitTemplate.convertAndSend(orderExchange.getName(), routingKey, event);
+            rabbitTemplate.convertAndSend(orderExchange.getName(), resolvedRoutingKey, event);
             log.info("Message published status: {} in order topic to customer_id : {} with routingKey: {} - Message: {}", event.status(), event.customerId(), routingKey, event);
         }catch (Exception e){
             log.error("Error publish message order topic to customer_id : {} - {}", event.customerId(), e.getMessage());
