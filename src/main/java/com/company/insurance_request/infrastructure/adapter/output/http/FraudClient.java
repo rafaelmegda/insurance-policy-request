@@ -1,7 +1,7 @@
 package com.company.insurance_request.infrastructure.adapter.output.http;
 
 import com.company.insurance_request.domain.event.OrderTopicEvent;
-import com.company.insurance_request.domain.model.ValidateFraud;
+import com.company.insurance_request.domain.model.Fraud;
 import com.company.insurance_request.domain.port.output.FraudPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +23,17 @@ public class FraudClient implements FraudPort {
     private RestTemplate restTemplate;
 
     @Override
-    public ValidateFraud validate(OrderTopicEvent event) {
+    public Fraud validate(OrderTopicEvent event) {
         try{
-            ValidateFraud response = null;
+            log.info("Calling Fraud API for customerId: {}", event.customerId());
+            Fraud response = null;
              response = restTemplate.getForObject(
                     baseUrl + path + event.customerId(),
-                    ValidateFraud.class
+                    Fraud.class
             );
             return response;
         }catch (Exception ex){
-            log.error("Erro ao chamar API de fraude", ex);
+            log.error("Error calling Fraud API for customerId: {} - {}", event.customerId(), ex.getMessage());
             return null;
         }
     }

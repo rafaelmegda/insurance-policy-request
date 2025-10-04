@@ -6,7 +6,7 @@ import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.CoverageJpaEntity;
-import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.PolicieJpaEntity;
+import com.company.insurance_request.infrastructure.adapter.output.jpa.entity.PolicyJpaEntity;
 import com.company.insurance_request.infrastructure.adapter.output.jpa.repository.PolicieRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,10 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
     @Override
     public Policy save(PolicyRequest policyRequest) {
         try{
-            PolicieJpaEntity entity = new PolicieJpaEntity();
+            log.info("Persisting Policy request for client: {}", policyRequest.customerId());
+
+            PolicyJpaEntity entity = new PolicyJpaEntity();
+            entity.setPolicyId(UUID.randomUUID());
             entity.setCustomerId(policyRequest.customerId());
             entity.setProductId(policyRequest.productId());
             entity.setCategory(policyRequest.category());
@@ -48,12 +51,14 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
                     coverageJpaEntity.setRoubo(coverage.getRoubo());
                     coverageJpaEntity.setPerdaTotal(coverage.getPerdaTotal());
                     coverageJpaEntity.setColisaoComTerceiros(coverage.getColisaoComTerceiros());
-                    coverageJpaEntity.setPolicie(entity);
+                    coverageJpaEntity.setPolicy(entity);
                     entity.getCoverages().add(coverageJpaEntity);
                 });
             }
 
-            PolicieJpaEntity saved = policieRepository.save(entity);
+            PolicyJpaEntity saved = policieRepository.save(entity);
+            log.info("Created policy: {} for client: {}", saved.getPolicyId(), policyRequest.customerId());
+
             return toDomain(saved);
         }catch (Exception e){
             log.error("Error creating Policy for client: {} - {}", policyRequest.customerId(), e.getMessage());
@@ -62,28 +67,30 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
     }
 
     @Override
-    public Policy update(Long policieId, String newStatus) {
-        PolicieJpaEntity updated = new PolicieJpaEntity();
+    public Policy update(UUID policyId, Status status) {
 
-        Optional<PolicieJpaEntity> optional = policieRepository.findById(policieId);
+        log.info("Updating status to: {} to policy: {}", status, policyId);
+        PolicyJpaEntity updated = new PolicyJpaEntity();
+
+        Optional<PolicyJpaEntity> optional = policieRepository.findById(policyId);
         if (optional.isEmpty()) {
-            throw new NoSuchElementException("Policie not found with id: " + policieId);
+            throw new NoSuchElementException("Policy not found with id: " + policyId);
         }
-        PolicieJpaEntity entity = optional.get();
-        entity.setStatus(Status.valueOf(newStatus));
+        PolicyJpaEntity entity = optional.get();
+        entity.setStatus(Status.valueOf(String.valueOf(status)));
 
         if (entity.getStatus() == Status.CANCELED) {
             entity.setFinishedAt(LocalDateTime.now());
-            log.info("Policie with id {} has been cancelled, Cannot be changed", policieId);
+            log.info("Policy with id {} has been cancelled, Cannot be changed", policyId);
             return toDomain(updated = policieRepository.save(entity));
         }
 
         return toDomain(updated = policieRepository.save(entity));
     }
 
-    private Policy toDomain(PolicieJpaEntity saved) {
+    private Policy toDomain(PolicyJpaEntity saved) {
         return Policy.builder()
-                .id(saved.getId())
+                .policyId(saved.getPolicyId())
                 .customerId(saved.getCustomerId())
                 .productId(saved.getProductId())
                 .category(saved.getCategory())

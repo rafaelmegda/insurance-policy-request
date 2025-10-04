@@ -4,11 +4,12 @@ import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/policies")
 public class PolicyController {
@@ -22,14 +23,23 @@ public class PolicyController {
     @PostMapping
     public ResponseEntity<PolicyResponse> createPolice(
             @RequestBody PolicyRequest request
-    ) throws JsonProcessingException {
-        Policy policySaved = createPoliceUseCase.create(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new PolicyResponse(
-                        policySaved.getId(),
-                        policySaved.getCreatedAt()
-                ));
+    ) {
+        log.info("Starting insurance policy application processing {}", request);
+
+        try{
+            Policy policySaved = createPoliceUseCase.create(request);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(new PolicyResponse(
+                            policySaved.getPolicyId(),
+                            policySaved.getCreatedAt()
+                    ));
+        }catch (Exception ex){
+            log.error("Error processing insurance policy application {}", ex.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
     }
     
     @GetMapping

@@ -6,28 +6,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class PaymentTopicListner {
+public class PaymentTopicListener {
 
     private final PaymentTopicUseCase paymentTopicUseCase;
 
-    public PaymentTopicListner(PaymentTopicUseCase paymentTopicUseCase) {
+    public PaymentTopicListener(@Qualifier("paymentTopicService") PaymentTopicUseCase paymentTopicUseCase) {
         this.paymentTopicUseCase = paymentTopicUseCase;
     }
 
-    // TODO DEFINIR A FILA
-    @RabbitListener(queues = "${messaging.queue.policy-status:insurance.policy.status.q}" )
+    @RabbitListener(queues = "${messaging.queue.payment}" )
     public void onMessage(PaymentTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("Received message with routing key {}: message: {}", routingKey, event);
+            log.info("Message received status: {} queue.payment to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
             paymentTopicUseCase.processMessagePayment(event);
         }catch (Exception e){
-            log.error("Error listener message to policy_id: {} - status: {} - error: {}", event.policieId(), event.status(), e.getMessage());
+            log.error("Error listener message queue.payment to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
             throw e;
         }
     }

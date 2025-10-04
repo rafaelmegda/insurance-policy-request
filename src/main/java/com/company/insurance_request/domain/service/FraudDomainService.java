@@ -11,19 +11,19 @@ import java.math.BigDecimal;
 @Service
 public class FraudDomainService {
 
-    private static final BigDecimal REGULAR_VIDA_RESIDENCIAL = new BigDecimal("500000");
+    private static final BigDecimal REGULAR_LIFE_RESIDENTIAL = new BigDecimal("500000");
     private static final BigDecimal REGULAR_AUTO = new BigDecimal("350000");
     private static final BigDecimal REGULAR_OTHER = new BigDecimal("255000");
 
     private static final BigDecimal HIGH_RISK_AUTO = new BigDecimal("250000");
-    private static final BigDecimal HIGH_RISK_RESIDENCIAL = new BigDecimal("150000");
+    private static final BigDecimal HIGH_RISK_RESIDENTIAL = new BigDecimal("150000");
     private static final BigDecimal HIGH_RISK_OTHER = new BigDecimal("125000");
 
-    private static final BigDecimal PREFERENTIAL_VIDA = new BigDecimal("800000");
-    private static final BigDecimal PREFERENTIAL_AUTO_RESIDENCIAL = new BigDecimal("450000");
+    private static final BigDecimal PREFERENTIAL_LIFE = new BigDecimal("800000");
+    private static final BigDecimal PREFERENTIAL_AUTO_RESIDENTIAL = new BigDecimal("450000");
     private static final BigDecimal PREFERENTIAL_OTHER = new BigDecimal("375000");
 
-    private static final BigDecimal NOINFO_VIDA_RESIDENCIAL = new BigDecimal("200000");
+    private static final BigDecimal NOINFO_LIFE_RESIDENTIAL = new BigDecimal("200000");
     private static final BigDecimal NOINFO_AUTO = new BigDecimal("75000");
     private static final BigDecimal NOINFO_OTHER = new BigDecimal("55000");
 
@@ -44,8 +44,9 @@ public class FraudDomainService {
     }
 
     private boolean checkRegular(Category category, BigDecimal insuredAmount) {
+        log.info("Checking REGULAR classification for category: {}", category);
         if (category == Category.LIFE || category == Category.RESIDENTIAL) {
-            return insuredAmount.compareTo(REGULAR_VIDA_RESIDENCIAL) <= 0;
+            return insuredAmount.compareTo(REGULAR_LIFE_RESIDENTIAL) <= 0;
         } else if (category == Category.AUTO) {
             return insuredAmount.compareTo(REGULAR_AUTO) <= 0;
         } else {
@@ -54,28 +55,31 @@ public class FraudDomainService {
     }
 
     private boolean checkHighRisk(Category category, BigDecimal insuredAmount) {
+        log.info("Checking HIGH_RISK classification for category: {}", category);
         if (category == Category.AUTO) {
             return insuredAmount.compareTo(HIGH_RISK_AUTO) <= 0;
         } else if (category == Category.RESIDENTIAL) {
-            return insuredAmount.compareTo(HIGH_RISK_RESIDENCIAL) <= 0;
+            return insuredAmount.compareTo(HIGH_RISK_RESIDENTIAL) <= 0;
         } else {
             return insuredAmount.compareTo(HIGH_RISK_OTHER) <= 0;
         }
     }
 
     private boolean checkPreferential(Category category, BigDecimal insuredAmount) {
+        log.info("Checking PREFERENTIAL classification for category: {}", category);
         if (category == Category.LIFE) {
-            return insuredAmount.compareTo(PREFERENTIAL_VIDA) < 0;
+            return insuredAmount.compareTo(PREFERENTIAL_LIFE) < 0;
         } else if (category == Category.AUTO || category == Category.RESIDENTIAL) {
-            return insuredAmount.compareTo(PREFERENTIAL_AUTO_RESIDENCIAL) < 0;
+            return insuredAmount.compareTo(PREFERENTIAL_AUTO_RESIDENTIAL) < 0;
         } else {
             return insuredAmount.compareTo(PREFERENTIAL_OTHER) <= 0;
         }
     }
 
     private boolean checkNoInfo(Category category, BigDecimal insuredAmount) {
+        log.info("Checking NO_INFORMATION classification for category: {}", category);
         if (category == Category.LIFE || category == Category.RESIDENTIAL) {
-            return insuredAmount.compareTo(NOINFO_VIDA_RESIDENCIAL) <= 0;
+            return insuredAmount.compareTo(NOINFO_LIFE_RESIDENTIAL) <= 0;
         } else if (category == Category.AUTO) {
             return insuredAmount.compareTo(NOINFO_AUTO) <= 0;
         } else {
