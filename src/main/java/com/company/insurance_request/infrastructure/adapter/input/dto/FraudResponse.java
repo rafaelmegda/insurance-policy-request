@@ -7,7 +7,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record ValidateFraudResponse (
+public record FraudResponse(
 
         @JsonProperty("order_id") UUID orderId,
         @JsonProperty("customer_id") UUID customerId,

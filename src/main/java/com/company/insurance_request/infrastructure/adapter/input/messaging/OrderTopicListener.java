@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @Component
 public class OrderTopicListener {
@@ -26,7 +28,11 @@ public class OrderTopicListener {
         try{
             log.info("Message received status: {} queue.order.status to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
             orderTopicUseCase.processMessageOrder(event);
-        }catch (Exception e){
+        }
+        catch(NoSuchElementException e) {
+            log.warn("Policy {} not found for order event: {} - {}", event.policyId(), event, e.getMessage());
+        }
+        catch (Exception e){
             log.error("Error listener queue.order.status message to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
             throw e;
         }
