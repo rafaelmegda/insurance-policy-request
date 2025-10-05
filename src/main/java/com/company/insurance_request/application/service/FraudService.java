@@ -48,7 +48,7 @@ public class FraudService implements FraudUseCase {
                 log.info("Policy {} approved after fraud validation", event.policyId());
                 Policy policy = policyService.updateStatus(event.policyId(), Status.VALIDATED);
 
-                publisher.publish(policyEventMapper.toStatusEvent(policy), Status.VALIDATED.toValue());
+                publisher.publishReceived(policyEventMapper.toStatusEvent(policy), Status.VALIDATED.toValue());
 
                 policy = policyService.updateStatus(event.policyId(), Status.PENDING);
                 log.info("Policy {} in status {} awaiting payment and subscription analysis", Status.PENDING, event.policyId());

@@ -67,9 +67,9 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
     }
 
     @Override
-    public Policy update(UUID policyId, Status status) {
+    public Policy update(UUID policyId, Status status, LocalDateTime finishedAt) {
 
-        log.info("Updating status to: {} to policy: {}", status, policyId);
+
         PolicyJpaEntity updated = new PolicyJpaEntity();
 
         Optional<PolicyJpaEntity> optional = policieRepository.findById(policyId);
@@ -78,7 +78,9 @@ public class PolicieRepositoryAdapter implements PoliceRepositoryPort {
         }
         PolicyJpaEntity entity = optional.get();
         entity.setStatus(Status.valueOf(String.valueOf(status)));
+        entity.setFinishedAt(finishedAt);
 
+        // TODO JOGAR ESSA REGRA PRO SERVICE
         if (entity.getStatus() == Status.CANCELED) {
             entity.setFinishedAt(LocalDateTime.now());
             log.info("Policy with id {} has been cancelled, Cannot be changed", policyId);

@@ -2,7 +2,6 @@ package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
 import com.company.insurance_request.domain.event.SubscriptionTopicEvent;
 import com.company.insurance_request.domain.model.AggregationMessage;
-import com.company.insurance_request.domain.port.input.SubscriptionTopicUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -19,12 +18,9 @@ import java.util.NoSuchElementException;
 @Component
 public class SubscriptionTopicListener {
 
-    private final SubscriptionTopicUseCase subscriptionTopicUseCase;
     private final MessageChannel subscriptionTopicChannel;
 
-    public SubscriptionTopicListener(@Qualifier("subscriptionTopicService") SubscriptionTopicUseCase subscriptionTopicUseCase,
-                                     @Qualifier("subscriptionTopicChannel") MessageChannel subscriptionTopicChannel) {
-        this.subscriptionTopicUseCase = subscriptionTopicUseCase;
+    public SubscriptionTopicListener(@Qualifier("subscriptionTopicChannel") MessageChannel subscriptionTopicChannel) {
         this.subscriptionTopicChannel = subscriptionTopicChannel;
     }
 
@@ -32,8 +28,7 @@ public class SubscriptionTopicListener {
     public void onMessage(SubscriptionTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("Subscription received policyId: {} - routing : {} - event: {}", event.policyId(), routingKey, event);
-            subscriptionTopicUseCase.processMessageSubscription(event);
+            log.info("Message received status: {} in queue.subscription to policy_id: {}", event.status(), event.policyId());
 
             subscriptionTopicChannel.send(
                     MessageBuilder.withPayload(AggregationMessage.from(event))

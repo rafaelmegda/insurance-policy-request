@@ -2,7 +2,6 @@ package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
 import com.company.insurance_request.domain.event.PaymentTopicEvent;
 import com.company.insurance_request.domain.model.AggregationMessage;
-import com.company.insurance_request.domain.port.input.PaymentTopicUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.support.MessageBuilder;
@@ -19,12 +18,9 @@ import java.util.NoSuchElementException;
 @Component
 public class PaymentTopicListener {
 
-    private final PaymentTopicUseCase paymentTopicUseCase;
     private final MessageChannel paymentTopicChannel;
 
-    public PaymentTopicListener(@Qualifier("paymentTopicService") PaymentTopicUseCase paymentTopicUseCase,
-                                @Qualifier("paymentTopicChannel") MessageChannel paymentTopicChannel) {
-        this.paymentTopicUseCase = paymentTopicUseCase;
+    public PaymentTopicListener(@Qualifier("paymentTopicChannel") MessageChannel paymentTopicChannel) {
         this.paymentTopicChannel = paymentTopicChannel;
     }
 
@@ -32,9 +28,7 @@ public class PaymentTopicListener {
     public void onMessage(PaymentTopicEvent event,
                           @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
         try{
-            log.info("Message received status: {} queue.payment to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
-            paymentTopicUseCase.processMessagePayment(event);
-
+            log.info("Message received status: {} in queue.payment to policy_id: {}", event.status(), event.policyId());
             paymentTopicChannel.send(
                     MessageBuilder.withPayload(AggregationMessage.from(event))
                             .setHeader(AmqpHeaders.RECEIVED_ROUTING_KEY, routingKey)

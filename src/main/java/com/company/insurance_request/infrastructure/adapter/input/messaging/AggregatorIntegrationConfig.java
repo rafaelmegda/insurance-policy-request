@@ -1,11 +1,10 @@
 // java
 package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
-import com.company.insurance_request.application.service.PolicyService;
+import com.company.insurance_request.application.service.PolicyAggregationService;
 import com.company.insurance_request.domain.AggregationResult;
 import com.company.insurance_request.domain.model.AggregationMessage;
 import com.company.insurance_request.domain.model.enums.EventType;
-import com.company.insurance_request.domain.model.enums.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +24,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
 import javax.sql.DataSource;
-import java.util.NoSuchElementException;
+import java.awt.geom.Area;
 import java.util.UUID;
 
 @Slf4j
@@ -33,8 +32,6 @@ import java.util.UUID;
 @EnableIntegration
 @RequiredArgsConstructor
 public class AggregatorIntegrationConfig {
-
-    private final PolicyService policyService;
 
     @Bean(name = "paymentTopicChannel")
     public MessageChannel paymentChannel() {
@@ -61,42 +58,39 @@ public class AggregatorIntegrationConfig {
         return new JdbcMessageStore(ds);
     }
 
-    // Bridges: conectam os listeners ao agregador
     @Bean
     @ServiceActivator(inputChannel = "paymentTopicChannel")
     public MessageHandler paymentToAggregatorBridge() {
-        BridgeHandler bridge = new BridgeHandler();
-        bridge.setOutputChannel(aggregatorInput());
-        return bridge;
+        return message -> {
+            try {
+                AggregationMessage payload = (AggregationMessage) message.getPayload();
+                log.info("Message received in topic payment policy id: {} with status: {} to aggregator", payload.getPolicyId(), payload.getStatus());
+                boolean sent = aggregatorInput().send(message);
+                log.info("Message of policy id {} sent to aggregator payment: {}", payload.getPolicyId(), sent);
+            }catch (Exception ex) {
+                log.error("Error sending message to aggregator payment: {}", ex.getMessage());
+            }
+        };
     }
 
     @Bean
     @ServiceActivator(inputChannel = "subscriptionTopicChannel")
     public MessageHandler subscriptionToAggregatorBridge() {
-        BridgeHandler bridge = new BridgeHandler();
-        bridge.setOutputChannel(aggregatorInput());
-        return bridge;
+        return message -> {
+            try {
+                AggregationMessage payload = (AggregationMessage) message.getPayload();
+                log.info("Message received in topic subscription policy id: {} with status: {} to aggregator", payload.getPolicyId(), payload.getStatus());
+                boolean sent = aggregatorInput().send(message);
+                log.info("Message of policy id {} sent to aggregator subscription: {}", payload.getPolicyId(), sent);
+            } catch (Exception ex) {
+                log.error("Error sending message to aggregator subscription: {}", ex.getMessage());
+            }
+        };
     }
 
     @Bean
     public AggregatingMessageHandler aggregatorHandler(MessageGroupStore messageGroupStore) {
-        MessageGroupProcessor processor = group -> {
-            UUID policyId = (UUID) group.getGroupId();
-            String paymentStatus = null;
-            String subscriptionStatus = null;
-
-            for (Message<?> msg : group.getMessages()) {
-                AggregationMessage p = (AggregationMessage) msg.getPayload();
-                if (p.getEventType() == EventType.PAYMENT) {
-                    paymentStatus = p.getStatus();
-                } else if (p.getEventType() == EventType.SUBSCRIPTION) {
-                    subscriptionStatus = p.getStatus();
-                }
-            }
-            return new AggregationResult(policyId, paymentStatus, subscriptionStatus);
-        };
-
-        AggregatingMessageHandler handler = new AggregatingMessageHandler(processor);
+        AggregatingMessageHandler handler = getAggregatingMessageHandler();
 
         handler.setCorrelationStrategy(message -> {
             AggregationMessage payload = (AggregationMessage) ((Message<?>) message).getPayload();
@@ -106,10 +100,45 @@ public class AggregatorIntegrationConfig {
         handler.setReleaseStrategy(this::releaseWhenCompleteOrRejected);
         handler.setMessageStore(messageGroupStore);
         handler.setExpireGroupsUponTimeout(true);
-        handler.setGroupTimeoutExpression(new ValueExpression<>(500000L)); // TODO: ajustar timeout
+        handler.setGroupTimeoutExpression(new ValueExpression<>(900_000L)); //15 min
         handler.setSendPartialResultOnExpiry(false);
-        handler.setOutputChannelName("nullChannel");
 
+        // Envia o AggregationResult para o canal de saída para o Service da aplicação
+        handler.setOutputChannel(aggregatedOutput());
+
+        return handler;
+    }
+
+    private AggregatingMessageHandler getAggregatingMessageHandler() {
+
+        MessageGroupProcessor processor = group -> {
+            try {
+                UUID policyId = (UUID) group.getGroupId();
+                log.info("starting aggregation: policyId={}, groupSize={}", policyId, group.size());
+
+                String paymentStatus = null;
+                String subscriptionStatus = null;
+
+                for (Message<?> msg : group.getMessages()) {
+                    AggregationMessage p = (AggregationMessage) msg.getPayload();
+                    if (p.getEventType() == EventType.PAYMENT) {
+                        paymentStatus = p.getStatus();
+                    } else if (p.getEventType() == EventType.SUBSCRIPTION) {
+                        subscriptionStatus = p.getStatus();
+                    }
+                }
+
+                AggregationResult result = new AggregationResult(policyId, paymentStatus, subscriptionStatus);
+                log.info("Aggregation finalized: policyId={}, paymentStatus={}, subscriptionStatus={}",
+                        policyId, paymentStatus, subscriptionStatus);
+                return result;
+            } catch (Exception e) {
+                log.error("Error during aggregation", e);
+                throw new IllegalStateException("Failed to aggregate message group", e);
+            }
+        };
+
+        AggregatingMessageHandler handler = new AggregatingMessageHandler(processor);
         return handler;
     }
 
@@ -119,41 +148,54 @@ public class AggregatorIntegrationConfig {
         return aggregatorHandler;
     }
 
-    private boolean releaseWhenCompleteOrRejected(MessageGroup group) {
-        boolean hasPayment = false, hasSubscription = false, anyRejected = false;
-        UUID policyId = (UUID) group.getGroupId();
+    @Bean
+    @ServiceActivator(inputChannel = "aggregatedOutput")
+    public MessageHandler aggregatedOutputServiceActivator(PolicyAggregationService service) {
+        return message -> {
+            try {
+                AggregationResult result = (AggregationResult) message.getPayload();
+                log.info("Processing aggregated result: policyId={}, paymentStatus={}, subscriptionStatus={}",
+                        result.policyId(), result.paymentStatus(), result.subscriptionStatus());
+                service.finalizeAggregation(result);
+                log.info("Aggregated result processed successfully: policyId={}", result);
+            } catch (Exception e) {
+                log.error("Error processing aggregated result", e);
+            }
+        };
+    }
 
-        for (Message<?> msg : group.getMessages()) {
-            // TODO INCLUIR OS LOGS DE CADA EVENTO APROVADO OU REJEITADO
-            AggregationMessage p = (AggregationMessage) msg.getPayload();
-            if (p.getEventType() == EventType.PAYMENT) {
-                hasPayment = true;
-                if ("REJECTED".equalsIgnoreCase(p.getStatus())) {
-                    anyRejected = true;
-                }
-            } else if (p.getEventType() == EventType.SUBSCRIPTION) {
-                hasSubscription = true;
-                if ("REJECTED".equalsIgnoreCase(p.getStatus())) {
-                    anyRejected = true;
+    private boolean releaseWhenCompleteOrRejected(MessageGroup group) {
+
+        try {
+            boolean hasPayment = false, hasSubscription = false, anyRejected = false;
+
+            for (Message<?> msg : group.getMessages()) {
+                AggregationMessage p = (AggregationMessage) msg.getPayload();
+                if (p.getEventType() == EventType.PAYMENT) {
+                    hasPayment = true;
+                    if ("REJECTED".equalsIgnoreCase(p.getStatus())) {
+                        anyRejected = true;
+                    }
+                } else if (p.getEventType() == EventType.SUBSCRIPTION) {
+                    hasSubscription = true;
+                    if ("REJECTED".equalsIgnoreCase(p.getStatus())) {
+                        anyRejected = true;
+                    }
                 }
             }
-        }
-        // Atualiza o status da apólice com base nos resultados agregados
-        boolean ready = anyRejected || (hasPayment && hasSubscription);
-        if (ready && policyId != null) {
-            try{
-                if (anyRejected) {
-                    policyService.updateStatus(policyId, Status.REJECTED);
-                } else {
-                    policyService.updateStatus(policyId, Status.APPROVED);
-                }
-            }catch (NoSuchElementException e){
-                // TODO AVALIAR O QUE FAZER COM A MENSAGEM
-                log.warn("Policy {} not found when trying to update status - {}", policyId, e.getMessage());
-            }catch (Exception e){
-                log.error("Error updating policy {} status - {}", policyId, e.getMessage());
+            boolean ready = anyRejected || (hasPayment && hasSubscription);
+            if (ready) {
+                String reason = anyRejected ? "a component was REJECTED" : "both components received";
+                log.info("Releasing group reason={}, hasPayment={}, hasSubscription={}, anyRejected={}, groupSize={}",
+                        reason, hasPayment, hasSubscription, anyRejected, group.size());
+            } else {
+                log.info("Not ready to release group: hasPayment={}, hasSubscription={}, anyRejected={}, groupSize={}",
+                        hasPayment, hasSubscription, anyRejected, group.size());
             }
+            return ready;
+        } catch (Exception e){
+            log.error("Error in release strategy", e);
+            return false;
         }
-        return ready;
     }
 }

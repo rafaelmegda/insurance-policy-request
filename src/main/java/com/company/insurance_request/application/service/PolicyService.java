@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -38,9 +39,9 @@ public class PolicyService implements PoliceUseCase {
             log.info("Updating request status to: {} to policy: {}", policySaved.getStatus(), policySaved.getPolicyId());
             historyRepositoryPort.save(policySaved.getPolicyId(), Status.RECEIVED);
 
-            log.info("Publishing event to order topic: {} to policy: {}", policySaved.getStatus(), policySaved.getPolicyId());
+            log.info("Publishing event to order topic status {} to policy id: {}", policySaved.getStatus(), policySaved.getPolicyId());
             OrderTopicEvent event = eventMapper.toStatusEvent(policySaved);
-            publisher.publish(event, policySaved.getStatus().toString());
+            publisher.publishReceived(event, policySaved.getStatus().toString());
 
             return policySaved;
         }catch (Exception ex){
@@ -52,7 +53,15 @@ public class PolicyService implements PoliceUseCase {
 
     @Transactional
     public Policy updateStatus(UUID policyId, Status status) {
-        Policy updated = policeRepositoryPort.update(policyId, status);
+
+        log.info("Updating policy: {} to status {}", status, policyId);
+        Policy updated = Policy.builder().build();
+
+        if(status == Status.REJECTED || status == Status.APPROVED) {
+            updated = policeRepositoryPort.update(policyId, status, LocalDateTime.now());
+        } else {
+            updated = policeRepositoryPort.update(policyId, status, LocalDateTime.MIN);
+        }
         historyRepositoryPort.save(policyId, status);
         return updated;
     }
