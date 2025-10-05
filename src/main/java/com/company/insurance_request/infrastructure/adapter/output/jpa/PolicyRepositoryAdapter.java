@@ -77,7 +77,7 @@ public class PolicyRepositoryAdapter implements PolicyRepositoryPort {
 
         PolicyJpaEntity updated = new PolicyJpaEntity();
 
-        Optional<PolicyJpaEntity> optional = policyRepository.findById(policyId);
+        Optional<PolicyJpaEntity> optional = policyRepository.findByPolicyId(policyId);
         if (optional.isEmpty()) {
             throw new NoSuchElementException("Policy not found with id: " + policyId);
         }
@@ -85,11 +85,17 @@ public class PolicyRepositoryAdapter implements PolicyRepositoryPort {
         entity.setStatus(Status.valueOf(String.valueOf(status)));
         entity.setFinishedAt(finishedAt);
 
-        if (entity.getStatus() == Status.CANCELED) {
+        if (entity.getStatus() == Status.CANCELLED) {
             log.info("Policy id {} has been cancelled, Cannot be changed", policyId);
             return toDomain(updated = policyRepository.save(entity));
         }
         return toDomain(updated = policyRepository.save(entity));
+    }
+
+    @Override
+    public List<Policy> findByPolicyId(UUID policyId) {
+        Optional<PolicyJpaEntity> entities = policyRepository.findByPolicyId(policyId);
+        return entities.stream().map(this::toDomain).collect(Collectors.toList());
     }
 
     @Override

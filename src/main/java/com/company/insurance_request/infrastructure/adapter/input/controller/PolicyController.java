@@ -1,7 +1,10 @@
 package com.company.insurance_request.infrastructure.adapter.input.controller;
 
 import com.company.insurance_request.domain.model.Policy;
+import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.input.PolicyUseCase;
+import com.company.insurance_request.infrastructure.adapter.execption.PolicyIdNotExists;
+import com.company.insurance_request.infrastructure.adapter.execption.PolicyStatusUpdateException;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyResponse;
 import com.company.insurance_request.infrastructure.adapter.input.mapper.PolicyResponseMapper;
@@ -68,6 +71,33 @@ public class PolicyController {
                     .body(responses);
         }catch (Exception ex){
             log.error("Error consulting insurance policy application {}", ex.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
+    }
+
+    @PatchMapping("/{policyId}")
+    public ResponseEntity<PolicyResponse> updatePolicyStatus(
+            @PathVariable(name = "policyId") UUID policyId,
+            @RequestParam(name = "status") String status
+    ){
+        log.info("Starting update insurance policy status");
+
+        try{
+            Policy updated = policyUseCase.updateStatus(policyId, Enum.valueOf(Status.class, status));
+            return ResponseEntity.ok(PolicyResponseMapper.toResponse(updated));
+        } catch (PolicyStatusUpdateException ex){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(null);
+        } catch (PolicyIdNotExists ex){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+        catch (Exception ex){
+            log.error("Error updating insurance policy application {}", ex.getMessage());
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build();

@@ -11,5 +11,6 @@ import java.util.UUID;
 public interface PolicyRepositoryPort {
     Policy save(PolicyRequest policyRequest, Status status);
     Policy update(UUID policyId, Status status, LocalDateTime finalizedAt);
+    List<Policy> findByPolicyId(UUID policyId);
     List<Policy> getPolicyById(UUID policyId, UUID customerId);
 }

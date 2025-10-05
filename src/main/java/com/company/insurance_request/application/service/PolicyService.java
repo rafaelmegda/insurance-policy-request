@@ -8,12 +8,14 @@ import com.company.insurance_request.domain.port.output.HistoryRepositoryPort;
 import com.company.insurance_request.domain.port.output.OrderTopicPublisherPort;
 import com.company.insurance_request.domain.port.output.PolicyRepositoryPort;
 import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
+import com.company.insurance_request.infrastructure.adapter.execption.PolicyIdNotExists;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.company.insurance_request.infrastructure.adapter.execption.PolicyStatusUpdateException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,25 +56,49 @@ public class PolicyService implements PolicyUseCase {
 
     @Override
     public List<Policy> getPolicyById(UUID policyId, UUID customerId) {
-
         log.info("Finding policy by policyId: {} and customerId: {}", policyId, customerId);
-        List<Policy> policy = policyRepositoryPort.getPolicyById(policyId, customerId);
-
-        return policy;
+        return policyRepositoryPort.getPolicyById(policyId, customerId);
     }
 
     @Transactional
     public Policy updateStatus(UUID policyId, Status status) {
 
         log.info("Updating policy: {} to status {}", status, policyId);
-        Policy updated = Policy.builder().build();
+        Policy policy = policyRepositoryPort.findByPolicyId(policyId).stream().findFirst().orElse(null);
+
+        if (policy == null) {
+            String msg = String.format("Policy id {} not found", policyId);
+            log.info(msg);
+            throw new PolicyIdNotExists(msg);
+        }
+
+        if (policy.getStatus() == Status.CANCELLED) {
+            String msg = String.format("Policy id {} has been {}, Cannot be cancelled", policyId, policy.getStatus());
+            log.info(msg);
+            throw new PolicyStatusUpdateException(msg);
+        }
 
         if(status == Status.REJECTED || status == Status.APPROVED) {
-            updated = policyRepositoryPort.update(policyId, status, LocalDateTime.now());
-        } else {
-            updated = policyRepositoryPort.update(policyId, status, LocalDateTime.MIN);
+            historyRepositoryPort.save(policyId, status);
+            return policyRepositoryPort.update(policyId, status, LocalDateTime.now());
         }
-        historyRepositoryPort.save(policyId, status);
-        return updated;
+
+        if(status == Status.RECEIVED || status == Status.VALIDATED || status == Status.PENDING) {
+            historyRepositoryPort.save(policyId, status);
+            return policyRepositoryPort.update(policyId, status, LocalDateTime.MIN);
+        }
+
+        if(status == Status.CANCELLED) {
+            if (policy.getStatus() == Status.APPROVED || policy.getStatus() == Status.REJECTED) {
+                String msg = String.format("Policy id {} has been {}, Cannot be cancelled", policyId, policy.getStatus());
+                log.info(msg);
+                throw new PolicyStatusUpdateException(msg);
+            }
+            else{
+                historyRepositoryPort.save(policyId, status);
+                return policyRepositoryPort.update(policyId, status, LocalDateTime.now());
+            }
+        }
+        return policy;
     }
 }
