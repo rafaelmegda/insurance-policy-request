@@ -1,8 +1,9 @@
 // java
-package com.company.insurance_request.application.service;
+package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
-import com.company.insurance_request.domain.AggregatorDomain;
-import com.company.insurance_request.domain.model.AggregatorMessaging;
+import com.company.insurance_request.application.service.PolicyService;
+import com.company.insurance_request.domain.AggregationResult;
+import com.company.insurance_request.domain.model.AggregationMessage;
 import com.company.insurance_request.domain.model.enums.EventType;
 import com.company.insurance_request.domain.model.enums.Status;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ import java.util.UUID;
 @Configuration
 @EnableIntegration
 @RequiredArgsConstructor
-public class AggregatorService {
+public class AggregatorIntegrationConfig {
 
     private final PolicyService policyService;
 
@@ -77,25 +78,36 @@ public class AggregatorService {
         return bridge;
     }
 
-    // Aggregator handler inscrito no canal 'aggregatorInput'
     @Bean
     public AggregatingMessageHandler aggregatorHandler(MessageGroupStore messageGroupStore) {
-        MessageGroupProcessor processor = AggregatorDomain::from;
+        MessageGroupProcessor processor = group -> {
+            UUID policyId = (UUID) group.getGroupId();
+            String paymentStatus = null;
+            String subscriptionStatus = null;
+
+            for (Message<?> msg : group.getMessages()) {
+                AggregationMessage p = (AggregationMessage) msg.getPayload();
+                if (p.getEventType() == EventType.PAYMENT) {
+                    paymentStatus = p.getStatus();
+                } else if (p.getEventType() == EventType.SUBSCRIPTION) {
+                    subscriptionStatus = p.getStatus();
+                }
+            }
+            return new AggregationResult(policyId, paymentStatus, subscriptionStatus);
+        };
 
         AggregatingMessageHandler handler = new AggregatingMessageHandler(processor);
 
         handler.setCorrelationStrategy(message -> {
-            AggregatorMessaging payload = (AggregatorMessaging) ((Message<?>) message).getPayload();
+            AggregationMessage payload = (AggregationMessage) ((Message<?>) message).getPayload();
             return payload.getPolicyId();
         });
 
         handler.setReleaseStrategy(this::releaseWhenCompleteOrRejected);
         handler.setMessageStore(messageGroupStore);
         handler.setExpireGroupsUponTimeout(true);
-        handler.setGroupTimeoutExpression(new ValueExpression<>(500000L)); // 5s //TODO DEFINIR UM TEMPO MELHOR
+        handler.setGroupTimeoutExpression(new ValueExpression<>(500000L)); // TODO: ajustar timeout
         handler.setSendPartialResultOnExpiry(false);
-        // TODO SE MANDA PARA UM CANAL DE SAIDA
-        // descarta o resultado agregado para evitar exceções e reprocessamento
         handler.setOutputChannelName("nullChannel");
 
         return handler;
@@ -113,7 +125,7 @@ public class AggregatorService {
 
         for (Message<?> msg : group.getMessages()) {
             // TODO INCLUIR OS LOGS DE CADA EVENTO APROVADO OU REJEITADO
-            AggregatorMessaging p = (AggregatorMessaging) msg.getPayload();
+            AggregationMessage p = (AggregationMessage) msg.getPayload();
             if (p.getEventType() == EventType.PAYMENT) {
                 hasPayment = true;
                 if ("REJECTED".equalsIgnoreCase(p.getStatus())) {

@@ -1,7 +1,7 @@
 package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
 import com.company.insurance_request.domain.event.SubscriptionTopicEvent;
-import com.company.insurance_request.domain.model.AggregatorMessaging;
+import com.company.insurance_request.domain.model.AggregationMessage;
 import com.company.insurance_request.domain.port.input.SubscriptionTopicUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class SubscriptionTopicListener {
             subscriptionTopicUseCase.processMessageSubscription(event);
 
             subscriptionTopicChannel.send(
-                    MessageBuilder.withPayload(AggregatorMessaging.from(event))
+                    MessageBuilder.withPayload(AggregationMessage.from(event))
                             .setHeader(AmqpHeaders.RECEIVED_ROUTING_KEY, routingKey)
                             .build()
             );

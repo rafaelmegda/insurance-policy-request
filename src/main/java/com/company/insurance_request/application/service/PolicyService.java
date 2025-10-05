@@ -3,7 +3,7 @@ package com.company.insurance_request.application.service;
 import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Status;
-import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
+import com.company.insurance_request.domain.port.input.PoliceUseCase;
 import com.company.insurance_request.domain.port.output.HistoryRepositoryPort;
 import com.company.insurance_request.domain.port.output.OrderTopicPublisherPort;
 import com.company.insurance_request.domain.port.output.PoliceRepositoryPort;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PolicyService implements CreatePoliceUseCase {
+public class PolicyService implements PoliceUseCase {
 
     private final PoliceRepositoryPort policeRepositoryPort;
     private final HistoryRepositoryPort historyRepositoryPort;

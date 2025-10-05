@@ -1,7 +1,7 @@
 package com.company.insurance_request.infrastructure.adapter.input.controller;
 
 import com.company.insurance_request.domain.model.Policy;
-import com.company.insurance_request.domain.port.input.CreatePoliceUseCase;
+import com.company.insurance_request.domain.port.input.PoliceUseCase;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/policies")
 public class PolicyController {
 
-    private final CreatePoliceUseCase createPoliceUseCase;
+    private final PoliceUseCase policeUseCase;
 
-    public PolicyController(CreatePoliceUseCase createPoliceUseCase) {
-        this.createPoliceUseCase = createPoliceUseCase;
+    public PolicyController(PoliceUseCase policeUseCase) {
+        this.policeUseCase = policeUseCase;
     }
 
     @PostMapping
@@ -27,7 +27,7 @@ public class PolicyController {
         log.info("Starting insurance policy application processing {}", request);
 
         try{
-            Policy policySaved = createPoliceUseCase.create(request);
+            Policy policySaved = policeUseCase.create(request);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(new PolicyResponse(
