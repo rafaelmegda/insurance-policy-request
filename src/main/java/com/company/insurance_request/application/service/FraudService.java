@@ -1,14 +1,13 @@
 package com.company.insurance_request.application.service;
 
 import com.company.insurance_request.domain.event.OrderTopicEvent;
-import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.Fraud;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.input.FraudUseCase;
 import com.company.insurance_request.domain.port.output.OrderTopicPublisherPort;
 import com.company.insurance_request.domain.port.output.FraudPort;
 import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
-import com.company.insurance_request.domain.service.FraudDomainService;
+import com.company.insurance_request.domain.FraudResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ public class FraudService implements FraudUseCase {
     private final PolicyService policyService;
     private final OrderTopicPublisherPort publisher;
     private final PolicyEventMapper policyEventMapper;
-    private final FraudDomainService fraudDomainService;
+    private final FraudResult fraudResult;
 
     @Override
     public void processFraud(OrderTopicEvent event) throws JsonProcessingException {
@@ -38,7 +37,7 @@ public class FraudService implements FraudUseCase {
                 return;
             }
 
-            boolean approved = fraudDomainService.isValidated(
+            boolean approved = fraudResult.isValidated(
                     fraud.getClassification(),
                     event.category(),
                     event.insuredAmount()
@@ -46,16 +45,16 @@ public class FraudService implements FraudUseCase {
 
             if (approved) {
                 log.info("Policy {} approved after fraud validation", event.policyId());
-                Policy policy = policyService.updateStatus(event.policyId(), Status.VALIDATED);
+                policyService.updateStatus(event.policyId(), Status.VALIDATED);
 
-                publisher.publishReceived(policyEventMapper.toStatusEvent(policy), Status.VALIDATED.toValue());
+                publisher.publishReceived(event, Status.VALIDATED.toValue());
 
-                policy = policyService.updateStatus(event.policyId(), Status.PENDING);
+                policyService.updateStatus(event.policyId(), Status.PENDING);
                 log.info("Policy {} in status {} awaiting payment and subscription analysis", Status.PENDING, event.policyId());
 
             } else {
                 log.info("Policy {} rejected due to fraud rules, updating status to {}", event.policyId(), Status.REJECTED);
-                Policy policy = policyService.updateStatus(event.policyId(), Status.REJECTED);
+                policyService.updateStatus(event.policyId(), Status.REJECTED);
             }
         }
     }

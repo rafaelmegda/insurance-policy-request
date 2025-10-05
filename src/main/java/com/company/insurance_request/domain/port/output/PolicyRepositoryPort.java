@@ -5,10 +5,11 @@ import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
-public interface PoliceRepositoryPort {
-    Policy save(PolicyRequest policyRequest);
-
+public interface PolicyRepositoryPort {
+    Policy save(PolicyRequest policyRequest, Status status);
     Policy update(UUID policyId, Status status, LocalDateTime finalizedAt);
+    List<Policy> getPolicyById(UUID policyId, UUID customerId);
 }

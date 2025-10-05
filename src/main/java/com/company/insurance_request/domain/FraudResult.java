@@ -1,4 +1,4 @@
-package com.company.insurance_request.domain.service;
+package com.company.insurance_request.domain;
 
 import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.Classification;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Slf4j
 @Service
-public class FraudDomainService {
+public class FraudResult {
 
     private static final BigDecimal REGULAR_LIFE_RESIDENTIAL = new BigDecimal("500000");
     private static final BigDecimal REGULAR_AUTO = new BigDecimal("350000");

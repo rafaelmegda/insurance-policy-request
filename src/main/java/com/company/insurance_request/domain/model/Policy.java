@@ -51,7 +51,7 @@ public class Policy {
     private SalesChannel salesChannel;
 
     @JsonProperty("history")
-    private History history;
+    private List<History> history;
 
     @JsonProperty("status")
     private Status status;

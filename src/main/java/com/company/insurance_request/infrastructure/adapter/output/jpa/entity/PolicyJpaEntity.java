@@ -22,8 +22,6 @@ import java.util.*;
 @ToString(exclude = {"coverages"})
 public class PolicyJpaEntity {
 
-    //TODO Criar tabela History e relacionar aqui
-
     @Id
     private UUID policyId;
 
