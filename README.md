@@ -20,7 +20,9 @@ O fluxo contempla:
 - Notificação dos clientes no Broker Order Tópic sobre o status final de análise de fraude (APPROVED ou REJECTED)
 - Recebe do Broker Subscription Tópic o status da apólice APPROVED ou REJECTED
 - Recebe do Broker Payment Tópic o status da apólice APPROVED ou REJECTED
-- Atualiza o status da apólice de PENDING para APPROVED após confirmação de pagamento e subscrição
+- Atualiza o status da apólice de PENDING para APPROVED ou REJECTED após confirmação de pagamento e subscrição
+  - Neste fluxo foi adotado o Aggregate Oriented Database para combinar múltiplas mensagens em uma única mensagem coerente.
+  - [Mais informações no Artigo de Martin Fowler](https://martinfowler.com/bliki/AggregateOrientedDatabase.html)
 - Notificação dos clientes no Broker Order Tópic sobre o status final da apólice como APPROVED ou REJECTED
 - Recepção de requisições de consulta de solicitação de apólices via API REST pelo id solicitação ou customerId
 - Recepção de requisições de cancelamento das solicitações de apólices via API REST (permitida apenas para apólices que não estiverem no status APPROVED ou REJECTED)
@@ -105,9 +107,21 @@ Acessar o RabbitMQ Management UI
     - Para REJECTED: Atualiza status para REJECTED
 4. Consumidores podem filtrar via binding key (insurance.policy.*). 
     Exchange (exemplo conceitual):
-      - Exchange: insurance.policy.exchange
-      - Routing keys: insurance.policy.requested, insurance.policy.approved, etc.
-
+      - Exchange: 
+        - Order: insurance.order.ex
+        - payment: insurance.payment.ex
+        - subscription: insurance.subscription.ex
+      - Queues:
+        - Order: insurance.order.status.q
+        - Payment: insurance.payment.q
+        - Subscription: insurance.subscription.q
+      - Routing keys: 
+        - insurance.policy.received
+        - insurance.policy.validated
+        - insurance.policy.pending
+        - insurance.policy.rejected
+        - insurance.policy.approved
+        - insurance.policy.canceled
 
 -----------------------
 
@@ -142,42 +156,56 @@ Pasta do Wiremock contém:
 - mappings: Contém os arquivos de mapeamento que definem como o Wiremock deve responder a diferentes solicitações.
 
 -----------------------
-# Executando a aplicação
+# Como executar a aplicação com Docker Compose
 
-## Ambiente Docker
+**Observação:** Certifique-se de que o Docker e o Docker Compose estão instalados na sua máquina antes de executar os comandos acima.
 
-**Arquivo:** docker-compose.yml
-
-Executar local sem o docker (Sem o Mock Fraud API)
-```yaml
-spring.docker.compose.enabled=false
+1. Subir toda a infraestrutura (app, banco, mensageria, mocks)
+```bash
+docker compose up -d
 ```
 
-Rebuid somente app após alterar código fonte:
+2. Subir apenas a aplicação (após alterar código)
 ```bash
-docker compose build app
 docker compose up -d app
 ```
 
-Consultar os logs da Aplicação
+3. Verificar status dos containers
+ ```bash
+ docker ps
+ ```
+
+4. Consultar os logs da Aplicação
 ```bash
 docker compose logs -f app
 ```
 
-Parar docker compose
+5. Parar todos os containers
  ```bash
  docker compose down
  ```
 
-Parar forçado removendo Containers órfãos
+6. Parar e remover containers órfãos
  ```bash
 docker compose down --remove-orphans
  ```
 
-Listar Containers
- ```bash
- docker ps
- ```
+7. Acessar o console do banco H2
+    - URL: http://localhost:81
+    - JDBC URL: jdbc:h2:tcp://h2:1521/~/insurance_db
+    - Usuário: sa
+    - Senha: (em branco)
+
+8. Acessar o RabbitMQ Management UI
+    - URL: http://localhost:15672
+    - Usuário: guest
+    - Senha: guest
+
+9. Acessar o Wiremock Mock Fraud API
+    - URL: http://localhost:8082/__admin/
+    - Usuário: (não há autenticação)
+    - Senha: (não há autenticação)
+
 
 ## Mensageria RabbitMQ para Subscrição e Pagamento
 Para simular o fluxo completo, é necessário postar mensagens no RabbitMQ para os tópicos de Subscription e Payment.
@@ -210,7 +238,7 @@ Para visualizar as mensagens do tópico order (postado para os consumidores exte
 
  ```json
 {
-   "policy_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "policy_id": "PEGAR O VALOR DO BANCO PARA TESTES",
    "customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
    "product_id": 789,
    "category": "LIFE",
@@ -223,7 +251,7 @@ Para visualizar as mensagens do tópico order (postado para os consumidores exte
 **Exemplo de Payload para Subscrição ou Pagamento como REJECTED:**
  ```json
 {
-   "policy_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+   "policy_id": "PEGAR O VALOR DO BANCO PARA TESTES",
    "customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
    "product_id": 789,
    "category": "LIFE",
