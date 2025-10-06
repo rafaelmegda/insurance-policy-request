@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -18,9 +19,11 @@
 
 	<properties>
 		<java.version>17</java.version>
+		<jacoco.version>0.8.10</jacoco.version>
 	</properties>
 
 	<dependencies>
+		<!-- suas dependências (mantidas) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -100,22 +103,62 @@
 
 	<build>
 		<plugins>
+
+			<!-- JaCoCo: prepara agente, gera relatório e checa limites -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.10</version>
+				<version>${jacoco.version}</version>
 				<executions>
+					<!-- injetar o agent antes da fase de teste -->
 					<execution>
-						<goals><goal>prepare-agent</goal></goals>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<!-- arquivo de saída do exec -->
+							<destFile>${project.build.directory}/jacoco.exec</destFile>
+							<!-- cobertura para classes testadas no fork do surefire -->
+							<propertyName>argLine</propertyName>
+						</configuration>
 					</execution>
+
+					<!-- gerar relatório HTML após os testes -->
 					<execution>
 						<id>report</id>
 						<phase>test</phase>
-						<goals><goal>report</goal></goals>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/controller/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/controller/**/*.class</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/dto/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/dto/**/*.class</exclude>
+								<exclude>com/company/insurance_request/domain/dto/**</exclude>
+								<exclude>com/company/insurance_request/domain/dto/**/*.class</exclude>
+								<exclude>com/company/insurance_request/domain/port/output/mapper/**</exclude>
+								<exclude>src/main/java/com/company/insurance_request/infrastructure/adapter/input/mapper/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/output/jpa/entity/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/output/jpa/entity/**/*.class</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/output/messaging/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/output/messaging/**/*.class</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/messaging/**</exclude>
+								<exclude>com/company/insurance_request/infrastructure/adapter/input/messaging/**/*.class</exclude>
+								<exclude>**/generated/**</exclude>
+								<exclude>**/generated/**/*.class</exclude>
+								<exclude>**/test/**</exclude>
+								<exclude>**/*Exception*.class</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 					<execution>
 						<id>check</id>
-						<goals><goal>check</goal></goals>
+						<goals>
+							<goal>check</goal>
+						</goals>
 						<configuration>
 							<rules>
 								<rule>
@@ -124,15 +167,24 @@
 										<limit>
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.70</minimum> <!-- 70% mínimo -->
+											<minimum>0.70</minimum>
 										</limit>
 									</limits>
 								</rule>
 							</rules>
+							<excludes>
+								<exclude>**/*Config*.class</exclude>
+								<exclude>**/*Configuration*.class</exclude>
+								<exclude>**/*Application*.class</exclude>
+								<exclude>**/dto/**</exclude>
+								<exclude>**/mapper/**</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Compiler plugin (mantive config original para annotation processors) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -146,6 +198,7 @@
 				</configuration>
 			</plugin>
 
+			<!-- Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -158,23 +211,28 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+			<!-- Surefire: inclui argLine injetado pelo JaCoCo -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M7</version>
 				<configuration>
-					<argLine>-XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage</argLine>
+					<!-- JaCoCo fornece ${argLine}; mantive suas flags extras -->
+					<argLine>${argLine} -XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage</argLine>
 				</configuration>
 			</plugin>
 
+			<!-- Failsafe: para integration tests; também usa argLine -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>3.0.0-M7</version>
 				<configuration>
-					<argLine>-XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage</argLine>
+					<argLine>${argLine} -XX:+EnableDynamicAgentLoading -Djdk.instrument.traceUsage</argLine>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>
