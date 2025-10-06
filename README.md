@@ -1,4 +1,4 @@
-# insurance-request — README
+# Insurance Rrequest
 
 ## Visão geral rápida
 
@@ -12,8 +12,48 @@ Objetivo: receber solicitações, validar via anti-fraude, coordenar pagamento e
 4. Dois serviços externos (Payment e Subscription) publicam eventos `APPROVED` / `REJECTED`.
 5. O **aggregator** (listener) aguarda os dois eventos; quando ambos são `APPROVED` → marca `APPROVED` na tabela `policies`, caso contrário `REJECTED`.
 
+## Endpoints disponíveis
+
+**Criar uma nova apólice (POST)**
+```json
+curl --request POST \
+--url http://localhost:8081/v1/policies \
+--header 'Content-Type: application/json' \
+--data '{
+"customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
+"product_id": 789,
+"category": "LIFE",
+"coverages": [
+{
+"roubo": 10000,
+"perda_total": 10000,
+"colisao_com_terceiros": 500
+}
+],
+"assistances": [
+"24H_TOWING",
+"ROADSIDE_ASSISTANCE"
+],
+"total_monthly_premium_amount": 250.75,
+"insured_amount": 150000,
+"payment_method": "DEBIT_CARD",
+"sales_channel": "TELEFONE"
+}'
+```
+**Consultar apólice por policy_id ou customer_id (GET)**
+```json
+curl --request GET \
+  --url 'http://localhost:8081/v1/policies?customer_id=b6b62a04-a5fb-4409-ac52-208829c787f9&policy_id=75b17569-6b06-417e-a329-054b6389424e'
+``` 
+
+**Cancelar apólice (PATCH)**
+```json
+curl --request PATCH \
+  --url 'http://localhost:8081/v1/policies/75b17569-6b06-417e-a329-054b6389424e?status=CANCELLED'
+```
+
 ---
-## Como rodar localmente (com Docker Compose)
+# Execitando a aplicação (com Docker Compose)
 
 Requisitos: 
 - Docker >= 20.x, Docker Compose v2
@@ -71,49 +111,8 @@ docker compose down --remove-orphans
 10. Acessar a API da aplicação
     - URL: http://localhost:8081
 
-## Endpoints disponíveis
 
-**Criar uma nova apólice (POST)**
-```json
-curl --request POST \
---url http://localhost:8081/v1/policies \
---header 'Content-Type: application/json' \
---data '{
-"customer_id": "b6b62a04-a5fb-4409-ac52-208829c787f9",
-"product_id": 789,
-"category": "LIFE",
-"coverages": [
-{
-"roubo": 10000,
-"perda_total": 10000,
-"colisao_com_terceiros": 500
-}
-],
-"assistances": [
-"24H_TOWING",
-"ROADSIDE_ASSISTANCE"
-],
-"total_monthly_premium_amount": 250.75,
-"insured_amount": 150000,
-"payment_method": "DEBIT_CARD",
-"sales_channel": "TELEFONE"
-}'
-```
-**Consultar apólice por policy_id ou customer_id (GET)**
-```json
-curl --request GET \
-  --url 'http://localhost:8081/v1/policies?customer_id=b6b62a04-a5fb-4409-ac52-208829c787f9&policy_id=75b17569-6b06-417e-a329-054b6389424e'
-``` 
-
-**Cancelar apólice (PATCH)**
-```json
-curl --request PATCH \
-  --url 'http://localhost:8081/v1/policies/75b17569-6b06-417e-a329-054b6389424e?status=CANCELLED'
-```
-
-## Executando uma solicitação de apólice
-
-Fluxo completo para solicitação de apólice:
+**Siga estes paraa criar uma solicitação de apólice:**
 
 1. Fazer um `POST` para `http://localhost:8081/v1/policies` com o payload de solicitação de apólice:
 
@@ -205,7 +204,8 @@ curl --request PATCH \
 - **H2 no dev:** zero-config para contribuições; Postgres em prod recomendado (não usar H2 em produção).
 
 ### Trade-offs
--- **Eventual consistency:** decisões dependem de eventos externos; há janela de tempo (pending). Benefício: desacoplamento e escalabilidade; custo: complexidade operacional (retries, reconciliation).
+
+-- **Eventos:** decisões dependem de eventos externos; há janela de tempo (pending). Benefício: desacoplamento e escalabilidade; custo: complexidade operacional (retries, reconciliation).
 -- **Simplicidade vs robustez:** prefiri implementar aggregator simples em vez de orquestrador (menor complexidade).
 
 ### Hexagonal (Ports and Adapters)
