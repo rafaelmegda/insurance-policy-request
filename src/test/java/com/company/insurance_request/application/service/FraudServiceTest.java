@@ -192,7 +192,6 @@ public class FraudServiceTest {
         verifyNoInteractions(publisher);
     }
 
-    // Testes unitários do método isValidated usando instância real
     @Test
     void isValidated_returnsTrue_forRegularLifeAtLimit() {
         FraudResult fraudResult = new FraudResult();

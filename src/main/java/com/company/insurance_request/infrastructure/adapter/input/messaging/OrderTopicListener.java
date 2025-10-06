@@ -22,7 +22,6 @@ public class OrderTopicListener {
         this.orderTopicUseCase = orderTopicUseCase;
     }
 
-    // A filtragem efetiva ocorre no binding (properties), então o listener só receberá "validado".
     @RabbitListener(
             queues = "${messaging.queue.order.status}"
     )

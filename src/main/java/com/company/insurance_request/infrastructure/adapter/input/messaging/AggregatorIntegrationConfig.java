@@ -101,8 +101,6 @@ public class AggregatorIntegrationConfig {
         handler.setExpireGroupsUponTimeout(true);
         handler.setGroupTimeoutExpression(new ValueExpression<>(900_000L)); //15 min
         handler.setSendPartialResultOnExpiry(false);
-
-        // Envia o AggregationResult para o canal de saída para o Service da aplicação
         handler.setOutputChannel(aggregatedOutput());
 
         return handler;
