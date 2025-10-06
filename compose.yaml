@@ -57,8 +57,7 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
-    environment:
-      environment:
+    environment:S
       SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration
       SPRING_SQL_INIT_MODE: never
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
