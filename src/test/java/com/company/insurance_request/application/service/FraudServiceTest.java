@@ -3,17 +3,21 @@ package com.company.insurance_request.application.service;
 import com.company.insurance_request.domain.FraudResult;
 import com.company.insurance_request.domain.event.OrderTopicEvent;
 import com.company.insurance_request.domain.model.Fraud;
+import com.company.insurance_request.domain.model.enums.Category;
 import com.company.insurance_request.domain.model.enums.Classification;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.FraudPort;
 import com.company.insurance_request.domain.port.output.OrderTopicPublisherPort;
 import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
 
 import static org.mockito.Mockito.*;
 
@@ -188,4 +192,178 @@ public class FraudServiceTest {
         verifyNoInteractions(publisher);
     }
 
+    // Testes unitários do método isValidated usando instância real
+    @Test
+    void isValidated_returnsTrue_forRegularLifeAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.REGULAR, Category.LIFE, new BigDecimal("500000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forRegularLifeAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.REGULAR, Category.LIFE, new BigDecimal("500001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forRegularAutoAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.REGULAR, Category.AUTO, new BigDecimal("350000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forRegularAutoAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.REGULAR, Category.AUTO, new BigDecimal("350001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forRegularOtherAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.REGULAR, Category.TRAVEL, new BigDecimal("255000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forRegularOtherAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.REGULAR, Category.TRAVEL, new BigDecimal("255001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forHighRiskAutoAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.HIGH_RISK, Category.AUTO, new BigDecimal("250000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forHighRiskAutoAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.HIGH_RISK, Category.AUTO, new BigDecimal("250001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forHighRiskResidentialAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.HIGH_RISK, Category.RESIDENTIAL, new BigDecimal("150000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forHighRiskResidentialAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.HIGH_RISK, Category.RESIDENTIAL, new BigDecimal("150001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forHighRiskOtherAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.HIGH_RISK, Category.TRAVEL, new BigDecimal("125000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forHighRiskOtherAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.HIGH_RISK, Category.TRAVEL, new BigDecimal("125001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forPreferentialLifeBelowLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.PREFERENTIAL, Category.LIFE, new BigDecimal("799999")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forPreferentialLifeAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.PREFERENTIAL, Category.LIFE, new BigDecimal("800000")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forPreferentialAutoBelowLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.PREFERENTIAL, Category.AUTO, new BigDecimal("449999")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forPreferentialAutoAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.PREFERENTIAL, Category.AUTO, new BigDecimal("450000")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forPreferentialResidentialBelowLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.PREFERENTIAL, Category.RESIDENTIAL, new BigDecimal("449999")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forPreferentialResidentialAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.PREFERENTIAL, Category.RESIDENTIAL, new BigDecimal("450000")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forPreferentialOtherAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.PREFERENTIAL, Category.TRAVEL, new BigDecimal("375000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forPreferentialOtherAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.PREFERENTIAL, Category.TRAVEL, new BigDecimal("375001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forNoInfoLifeAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.NO_INFORMATION, Category.LIFE, new BigDecimal("200000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forNoInfoLifeAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.NO_INFORMATION, Category.LIFE, new BigDecimal("200001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forNoInfoResidentialAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.NO_INFORMATION, Category.RESIDENTIAL, new BigDecimal("200000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forNoInfoResidentialAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.NO_INFORMATION, Category.RESIDENTIAL, new BigDecimal("200001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forNoInfoAutoAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.NO_INFORMATION, Category.AUTO, new BigDecimal("75000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forNoInfoAutoAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.NO_INFORMATION, Category.AUTO, new BigDecimal("75001")));
+    }
+
+    @Test
+    void isValidated_returnsTrue_forNoInfoOtherAtLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertTrue(fraudResult.isValidated(Classification.NO_INFORMATION, Category.TRAVEL, new BigDecimal("55000")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forNoInfoOtherAboveLimit() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(Classification.NO_INFORMATION, Category.TRAVEL, new BigDecimal("55001")));
+    }
+
+    @Test
+    void isValidated_returnsFalse_forUnknownClassification() {
+        FraudResult fraudResult = new FraudResult();
+        Assertions.assertFalse(fraudResult.isValidated(null, Category.LIFE, new BigDecimal("1")));
+    }
 }

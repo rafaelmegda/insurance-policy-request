@@ -5,6 +5,7 @@ import com.company.insurance_request.domain.model.Policy;
 import com.company.insurance_request.domain.model.enums.Status;
 import com.company.insurance_request.domain.port.output.OrderTopicPublisherPort;
 import com.company.insurance_request.domain.port.output.mapper.PolicyEventMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -104,4 +105,65 @@ class PolicyAggregationServiceTest {
         verify(policyService).updateStatus(policyId, Status.APPROVED);
         verifyNoInteractions(publisher, policyEventMapper);
     }
+
+    @Test
+    void completed_returnsTrue_whenBothStatusesAreNotNull() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", "APPROVED");
+        Assertions.assertTrue(result.completed());
+    }
+
+    @Test
+    void completed_returnsFalse_whenPaymentStatusIsNull() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), null, "APPROVED");
+        Assertions.assertFalse(result.completed());
+    }
+
+    @Test
+    void completed_returnsFalse_whenSubscriptionStatusIsNull() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", null);
+        Assertions.assertFalse(result.completed());
+    }
+
+    @Test
+    void anyRejected_returnsTrue_whenPaymentStatusIsRejected_caseInsensitive() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "rejected", "APPROVED");
+        Assertions.assertTrue(result.anyRejected());
+    }
+
+    @Test
+    void anyRejected_returnsTrue_whenSubscriptionStatusIsRejected_caseInsensitive() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", "REJECTED");
+        Assertions.assertTrue(result.anyRejected());
+    }
+
+    @Test
+    void anyRejected_returnsFalse_whenNeitherStatusIsRejected() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", "APPROVED");
+        Assertions.assertFalse(result.anyRejected());
+    }
+
+    @Test
+    void decision_returnsRejected_whenAnyStatusIsRejected() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", "REJECTED");
+        Assertions.assertEquals(Status.REJECTED, result.decision());
+    }
+
+    @Test
+    void decision_returnsApproved_whenBothStatusesPresentAndNotRejected() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), "APPROVED", "APPROVED");
+        Assertions.assertEquals(Status.APPROVED, result.decision());
+    }
+
+    @Test
+    void decision_returnsPending_whenAnyStatusIsNullAndNotRejected() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), null, "APPROVED");
+        Assertions.assertEquals(Status.PENDING, result.decision());
+    }
+
+    @Test
+    void decision_returnsPending_whenBothStatusesAreNull() {
+        AggregationResult result = new AggregationResult(UUID.randomUUID(), null, null);
+        Assertions.assertEquals(Status.PENDING, result.decision());
+    }
+
 }
