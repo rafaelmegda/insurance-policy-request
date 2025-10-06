@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderTopicPublisher implements OrderTopicPublisherPort {
 
+    private static final String ROUTING_KEY_INTERNAL = "insurance.order.status.";
+    private static final String ROUTING_KEY_EXTERNAL = "insurance.order.external.status.";
+
     private final RabbitTemplate rabbitTemplate;
     private final TopicExchange orderExchange;
 
@@ -23,13 +26,28 @@ public class OrderTopicPublisher implements OrderTopicPublisherPort {
     }
 
     @Override
-    public void publish(OrderTopicEvent event, String routingKey) throws JsonProcessingException {
-        String resolvedRoutingKey = "insurance.order.status." + routingKey;
+    public void publishReceived(OrderTopicEvent event, String routingKey) throws JsonProcessingException {
+        String resolvedRoutingKey = ROUTING_KEY_INTERNAL + routingKey;
         try{
             rabbitTemplate.convertAndSend(orderExchange.getName(), resolvedRoutingKey, event);
-            log.info("Message published status: {} in order topic to customer_id : {} with routingKey: {} - Message: {}", event.status(), event.customerId(), routingKey, event);
+            log.info("Published to exchange={} router_key={} policy_id={} status={} payload={}",
+                    orderExchange.getName(), resolvedRoutingKey, event.policyId(), event.status(), event);
         }catch (Exception e){
-            log.error("Error publish message order topic to customer_id : {} - {}", event.customerId(), e.getMessage());
+            log.error("Publish error exchange={} rk={} policy_id={} status={} error={}",
+                    orderExchange.getName(), resolvedRoutingKey, event.policyId(), event.status(), e.getMessage());
+            throw e;
+        }
+    }
+
+    public void publishFinishStatus(OrderTopicEvent event, String routingKey) {
+        String resolvedRoutingKey = ROUTING_KEY_EXTERNAL + routingKey;
+        try {
+            rabbitTemplate.convertAndSend(orderExchange.getName(), resolvedRoutingKey, event);
+            log.info("Published (external) to exchange={} rk={} customer_id={} status={} payload={}",
+                    orderExchange.getName(), resolvedRoutingKey, event.customerId(), event.status(), event);
+        } catch (Exception e) {
+            log.error("Publish (external) error exchange={} rk={} customer_id={} status={} error={}",
+                    orderExchange.getName(), resolvedRoutingKey, event.customerId(), event.status(), e.getMessage());
             throw e;
         }
     }

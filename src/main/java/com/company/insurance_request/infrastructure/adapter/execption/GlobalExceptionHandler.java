@@ -20,9 +20,8 @@ import java.nio.file.AccessDeniedException;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // 400
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+    public ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
             HttpHeaders headers,
             HttpStatusCode status,
@@ -33,9 +32,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    // 400
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+    public ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
             HttpHeaders headers,
             HttpStatusCode status,
@@ -46,9 +44,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    // 404
     @Override
-    protected ResponseEntity<Object> handleNoHandlerFoundException(
+    public ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex,
             HttpHeaders headers,
             HttpStatusCode status,
@@ -59,7 +56,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
-    // 403
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<GlobalError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
         GlobalError body = GlobalError.of(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(),
@@ -67,7 +63,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
-    // 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GlobalError> handleGeneric(Exception ex, HttpServletRequest req) {
         GlobalError body = GlobalError.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),

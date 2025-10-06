@@ -15,8 +15,6 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CoverageJpaEntity {
 
-    // TODO - IMAGINAR COBERTURAS E INCLUIR COMO NULLABLE NA TABELA
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

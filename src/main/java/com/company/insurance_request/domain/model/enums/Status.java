@@ -9,7 +9,7 @@ public enum Status {
     PENDING,
     REJECTED,
     APPROVED,
-    CANCELED;
+    CANCELLED;
 
     @JsonCreator
     public static Status fromValue(String value) {

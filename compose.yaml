@@ -1,51 +1,77 @@
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Management UI
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    networks:
-      - app-network
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    depends_on:
-      - zookeeper
+  wiremock:
+    image: wiremock/wiremock:2.35.0
+    container_name: wiremock
+    ports:
+      - "8089:8080"     # host:container -> admin UI at http://localhost:8089/__admin
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings:ro
+      - ./wiremock/__files:/home/wiremock/__files:ro
+    command: [ "--verbose", "--global-response-templating" ]
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "http://localhost:8080/__admin/mappings" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  h2:
+    image: oscarfonts/h2
+    container_name: h2
+    ports:
+      - "1521:1521"  # TCP server (JDBC)
+      - "81:81"      # Web console
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    ports:
-      - "9092:9092"
-    networks:
-      - app-network
-
-  mockserver:
-    image: mockserver/mockserver:5.15.0
-    ports:
-      - "1080:1080"
-    networks:
-      - app-network
+      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers -ifNotExists"
+      H2_USER: sa
+      H2_PASSWORD: ""
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "sleep 1; wget -q -O - http://localhost:81 || true" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   app:
     build: .
+    container_name: insurance-app
     depends_on:
-      - kafka
-      - mockserver
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      MOCKSERVER_HOST: mockserver
-      MOCKSERVER_PORT: 1080
+      rabbitmq:
+        condition: service_healthy
+      wiremock:
+        condition: service_healthy
+      h2:
+        condition: service_healthy
     ports:
-      - "8080:8080"
-    networks:
-      - app-network
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+      - "8081:8081"
+    environment:
+      environment:
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration
+      SPRING_SQL_INIT_MODE: never
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JACKSON_PROPERTY_NAMING_STRATEGY: SNAKE_CASE
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      FRAUD_API_BASE_URL: http://wiremock:8080
+      SPRING_INTEGRATION_JDBC_INITIALIZE_SCHEMA: "true"
+
+    restart: on-failure
 
 networks:
   app-network:

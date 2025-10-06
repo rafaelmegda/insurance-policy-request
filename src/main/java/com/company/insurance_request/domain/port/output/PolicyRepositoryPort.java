@@ -1,0 +1,16 @@
+package com.company.insurance_request.domain.port.output;
+
+import com.company.insurance_request.domain.model.Policy;
+import com.company.insurance_request.domain.model.enums.Status;
+import com.company.insurance_request.infrastructure.adapter.input.dto.PolicyRequest;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public interface PolicyRepositoryPort {
+    Policy save(PolicyRequest policyRequest, Status status);
+    Policy update(UUID policyId, Status status, LocalDateTime finalizedAt);
+    List<Policy> findByPolicyId(UUID policyId);
+    List<Policy> getPolicyById(UUID policyId, UUID customerId);
+}

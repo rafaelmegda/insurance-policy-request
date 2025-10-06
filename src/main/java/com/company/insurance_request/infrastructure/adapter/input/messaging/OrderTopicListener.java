@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @Component
 public class OrderTopicListener {
@@ -20,14 +22,25 @@ public class OrderTopicListener {
         this.orderTopicUseCase = orderTopicUseCase;
     }
 
-    @RabbitListener(queues = "${messaging.queue.order.status}" )
+    @RabbitListener(
+            queues = "${messaging.queue.order.status}"
+    )
     public void onMessage(OrderTopicEvent event,
-                          @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey) throws JsonProcessingException {
+                          @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey,
+                          @Header(AmqpHeaders.CONSUMER_QUEUE) String queue
+    ) throws JsonProcessingException {
         try{
-            log.info("Message received status: {} queue.order.status to customer_id: {} - Event: {}", event.status(), event.customerId(), event);
+            log.info("Message received queue={} rk={} status={} policy-id={} payload={}",
+                    queue, routingKey, event.status(), event.policyId(), event);
             orderTopicUseCase.processMessageOrder(event);
-        }catch (Exception e){
-            log.error("Error listener queue.order.status message to policy_id: {} - status: {} - error: {}", event.policyId(), event.status(), e.getMessage());
+        }
+        catch(NoSuchElementException e) {
+            log.warn("Policy not found queue={} rk={} policy-id={} payload={} error={}",
+                    queue, routingKey, event.policyId(), event, e.getMessage());
+        }
+        catch (Exception e){
+            log.error("Listener error queue={} rk={} policy_id={} status={} error={}",
+                    queue, routingKey, event.policyId(), event.status(), e.getMessage());
             throw e;
         }
     }

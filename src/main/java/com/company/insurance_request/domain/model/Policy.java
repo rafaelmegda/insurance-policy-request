@@ -17,9 +17,6 @@ import java.util.UUID;
 @Builder
 public class Policy {
 
-    // TODO - AVALIAR SUBSTITUIR OS ENUMS POR OBJETOS PARA CRIAR TABELAS
-    // TODO - REVER MODELAGEM DE COBERTURA (Estão especificas para um tipo)
-
     @JsonProperty("policy_id")
     private UUID policyId;
 
@@ -51,7 +48,7 @@ public class Policy {
     private SalesChannel salesChannel;
 
     @JsonProperty("history")
-    private History history;
+    private List<History> history;
 
     @JsonProperty("status")
     private Status status;
