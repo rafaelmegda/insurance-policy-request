@@ -1,4 +1,3 @@
-// java
 package com.company.insurance_request.infrastructure.adapter.input.messaging;
 
 import com.company.insurance_request.application.service.PolicyAggregationService;

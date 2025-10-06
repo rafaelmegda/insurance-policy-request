@@ -51,7 +51,6 @@ public class PolicyService implements PolicyUseCase {
             log.error("Error creating insurance policy request {}", ex.getMessage());
             throw ex;
         }
-
     }
 
     @Override

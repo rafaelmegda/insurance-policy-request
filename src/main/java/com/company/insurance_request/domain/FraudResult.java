@@ -28,6 +28,10 @@ public class FraudResult {
     private static final BigDecimal NOINFO_OTHER = new BigDecimal("55000");
 
     public boolean isValidated(Classification classification, Category category, BigDecimal insuredAmount) {
+        if (classification == null) {
+            log.warn("Classification is null - Policy classified as rejected");
+            return false;
+        }
         switch (classification) {
             case REGULAR:
                 return checkRegular(category, insuredAmount);

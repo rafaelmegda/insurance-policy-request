@@ -21,7 +21,7 @@ import java.nio.file.AccessDeniedException;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+    public ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
             HttpHeaders headers,
             HttpStatusCode status,
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+    public ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
             HttpHeaders headers,
             HttpStatusCode status,
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleNoHandlerFoundException(
+    public ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex,
             HttpHeaders headers,
             HttpStatusCode status,
